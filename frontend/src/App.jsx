@@ -1,453 +1,477 @@
 import { useState } from "react";
 import "./App.css";
 
-function Logo({ light = false }) {
+const initialForm = {
+  businessType: "Retail Store",
+  projectSize: "Small",
+  initialInvestment: 50000,
+  monthlySales: 7000,
+  monthlyCosts: 12000,
+  employees: 8,
+};
+
+function Logo() {
   return (
     <div className="logo">
       <span className="logo-icon">⬡</span>
-      <b className={light ? "light" : ""}>Planora</b>
+      <span className="logo-text">Planora</span>
     </div>
   );
 }
 
-function Sidebar({ page, setPage }) {
+function Navbar({ setPage }) {
   return (
-    <aside className="sidebar">
-      <Logo light />
+    <header className="navbar">
+      <Logo />
 
-      <button onClick={() => setPage("dashboard")} className={page === "dashboard" ? "active" : ""}>
-        ⌂ Dashboard
+      <nav className="nav-links">
+        <button onClick={() => setPage("home")}>Home</button>
+        <button onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}>
+          Features
+        </button>
+        <button onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}>
+          About
+        </button>
+      </nav>
+
+      <button className="primary-btn" onClick={() => setPage("simulation")}>
+        Start Simulation
       </button>
-
-      <button onClick={() => setPage("simulation")} className={page === "simulation" ? "active" : ""}>
-        ☑ Scenarios
-      </button>
-
-      <button onClick={() => setPage("insights")} className={page === "insights" ? "active" : ""}>
-        ▤ Reports
-      </button>
-
-      <button onClick={() => setPage("pricing")} className={page === "pricing" ? "active" : ""}>
-        ⚙ Settings
-      </button>
-
-      <button className="logout">↪ Logout</button>
-    </aside>
+    </header>
   );
 }
 
 function Home({ setPage }) {
   return (
-    <main className="home">
-      <nav className="topbar">
-        <Logo light />
+    <main className="page home-page">
+      <Navbar setPage={setPage} />
 
-        <div>
-          <span>Home</span>
-          <span>Features</span>
-          <span>About</span>
-        </div>
-
-        <button onClick={() => setPage("simulation")}>Start Simulation</button>
-      </nav>
-
-      <section className="hero">
-        <div>
-          <p className="tag">SMART BUSINESS PLANNING</p>
+      <section className="hero-section">
+        <div className="hero-text">
+          <p className="eyebrow">SMART BUSINESS PLANNING</p>
           <h1>Plan Your Business Before You Risk Your Money</h1>
-          <p className="desc">
+          <p>
             Simulate, predict costs, profits, and analyse cash flow trends to ensure success.
           </p>
-          <button onClick={() => setPage("simulation")} className="start">
+          <button className="primary-btn large" onClick={() => setPage("simulation")}>
             Start Now →
           </button>
         </div>
 
-        <div className="illustration">
-          <div className="circle"></div>
-          <div className="float chart">↗</div>
-          <div className="float money">$</div>
+        <div className="hero-illustration" aria-label="business dashboard illustration">
+          <div className="hero-bg"></div>
+          <div className="icon-card">↗</div>
+          <div className="dollar">$</div>
           <div className="plant"></div>
 
           <div className="laptop">
             <div className="screen">
-              <div className="bars"></div>
+              <div className="screen-line short"></div>
+              <div className="screen-line long"></div>
 
-              <svg viewBox="0 0 200 120">
-                <polyline points="10,95 50,65 88,82 125,50 170,20" />
-                <circle cx="10" cy="95" r="5" />
-                <circle cx="50" cy="65" r="5" />
-                <circle cx="88" cy="82" r="5" />
-                <circle cx="125" cy="50" r="5" />
-                <circle cx="170" cy="20" r="5" />
+              <svg className="mini-chart" viewBox="0 0 180 120">
+                <polyline points="12,95 48,68 82,80 120,48 162,23" />
+                <circle cx="12" cy="95" r="5" />
+                <circle cx="48" cy="68" r="5" />
+                <circle cx="82" cy="80" r="5" />
+                <circle cx="120" cy="48" r="5" />
+                <circle cx="162" cy="23" r="5" />
               </svg>
 
-              <div className="pie"></div>
-              <div className="screen-lines"></div>
+              <div className="mini-pie"></div>
+              <div className="screen-bars"></div>
             </div>
           </div>
         </div>
       </section>
 
-      <h2 className="center-title">Powerful Features</h2>
-
-      <section className="features">
-        <div>
-          <span>▣</span>
-          <h3>Cost Breakdown</h3>
-          <p>Understand and categorize expenses.</p>
+      <section id="features" className="features-section">
+        <h2>Powerful Features</h2>
+        <div className="features-grid">
+          <Feature icon="▣" title="Cost Breakdown" text="Understand and categorize expenses." />
+          <Feature icon="↗" title="Profit Prediction" text="Forecast revenues and profits." />
+          <Feature icon="♙" title="Cash Flow Simulation" text="Visualize your future cash flow." />
+          <Feature icon="♧" title="AI Insights" text="Get actionable recommendations." />
         </div>
+      </section>
 
-        <div>
-          <span>↗</span>
-          <h3>Profit Prediction</h3>
-          <p>Forecast revenues and profits.</p>
-        </div>
-
-        <div>
-          <span>♙</span>
-          <h3>Cash Flow Simulation</h3>
-          <p>Visualize your future cash flow.</p>
-        </div>
-
-        <div>
-          <span>♧</span>
-          <h3>AI Insights</h3>
-          <p>Get actionable recommendations.</p>
-        </div>
+      <section id="about" className="about-section">
+        <h2>About Planora</h2>
+        <p>
+          Planora helps small business owners and freelancers test their project idea before
+          spending real money. The platform estimates costs, profit, cash flow, break-even time,
+          and gives useful recommendations.
+        </p>
       </section>
     </main>
   );
 }
 
-function Simulation({ page, setPage }) {
+function Feature({ icon, title, text }) {
   return (
-    <div className="layout">
-      <Sidebar page={page} setPage={setPage} />
+    <article className="feature-card">
+      <span>{icon}</span>
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </article>
+  );
+}
 
-      <section className="content">
-        <h1>New Simulation</h1>
-        <p className="sub">Enter your project details to run a simulation</p>
+function Simulation({ setPage, formData, setFormData, calculateResults }) {
+  function updateField(field, value) {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  }
 
-        <div className="steps">
-          <b>1</b>
-          <span>Quick Setup</span>
-          <i></i>
-          <b className="off">2</b>
-          <i></i>
-          <b className="off">3</b>
+  function runSimulation() {
+    calculateResults();
+    setPage("dashboard");
+  }
+
+  return (
+    <main className="page simulation-page">
+      <Navbar setPage={setPage} />
+
+      <section className="simulation-card">
+        <div className="page-heading">
+          <div>
+            <h1>New Simulation</h1>
+            <p>Enter your project details to run a simulation</p>
+          </div>
+
+          <button className="upgrade-btn" onClick={() => setPage("pricing")}>
+            ⭐ Upgrade Plan
+          </button>
         </div>
 
-        <Form title="1. Project Info">
-          <label>
-            Business Type:
-            <select>
-              <option>Retail Store</option>
-              <option>Cafe</option>
-              <option>Online Store</option>
-            </select>
-          </label>
+        <div className="steps">
+          <span className="step active">1</span>
+          <strong>Quick Setup</strong>
+          <i></i>
+          <span className="step">2</span>
+          <i></i>
+          <span className="step">3</span>
+        </div>
 
-          <div className="sizes">
-            <p>Project Size:</p>
-            <button>Small</button>
-            <button>Medium</button>
-            <button>Large</button>
+        <section className="form-section">
+          <h2>1. Project Info</h2>
+          <div className="form-grid">
+            <label>
+              Business Type:
+              <select
+                value={formData.businessType}
+                onChange={(e) => updateField("businessType", e.target.value)}
+              >
+                <option>Retail Store</option>
+                <option>Cafe</option>
+                <option>Online Business</option>
+                <option>Freelance Service</option>
+              </select>
+            </label>
+
+            <div className="size-group">
+              <p>Project Size:</p>
+              {["Small", "Medium", "Large"].map((size) => (
+                <button
+                  key={size}
+                  className={formData.projectSize === size ? "size-btn selected" : "size-btn"}
+                  onClick={() => updateField("projectSize", size)}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
           </div>
-        </Form>
+        </section>
 
-        <Form title="2. Financial Info">
-          <label>
-            Initial Investment ($):
-            <input defaultValue="50000" />
-          </label>
+        <section className="form-section">
+          <h2>2. Financial Info</h2>
+          <div className="form-grid">
+            <label>
+              Initial Investment ($):
+              <input
+                type="number"
+                value={formData.initialInvestment}
+                onChange={(e) => updateField("initialInvestment", Number(e.target.value))}
+              />
+            </label>
 
-          <label>
-            Expected Monthly Sales ($):
-            <input defaultValue="7000" />
-          </label>
-        </Form>
+            <label>
+              Expected Monthly Sales ($):
+              <input
+                type="number"
+                value={formData.monthlySales}
+                onChange={(e) => updateField("monthlySales", Number(e.target.value))}
+              />
+            </label>
+          </div>
+        </section>
 
-        <Form title="3. More Details">
-          <label>
-            Number of Employees:
-            <input defaultValue="8" />
-          </label>
+        <section className="form-section">
+          <h2>3. More Details</h2>
+          <div className="form-grid">
+            <label>
+              Number of Employees:
+              <input
+                type="number"
+                value={formData.employees}
+                onChange={(e) => updateField("employees", Number(e.target.value))}
+              />
+            </label>
 
-          <label>
-            Monthly Fixed Costs ($):
-            <input defaultValue="12000" />
-          </label>
-        </Form>
+            <label>
+              Monthly Fixed Costs ($):
+              <input
+                type="number"
+                value={formData.monthlyCosts}
+                onChange={(e) => updateField("monthlyCosts", Number(e.target.value))}
+              />
+            </label>
+          </div>
+        </section>
 
-        <button className="run" onClick={() => setPage("dashboard")}>
+        <button className="run-btn" onClick={runSimulation}>
           Run Simulation →
         </button>
       </section>
-    </div>
-  );
-}
-
-function Form({ title, children }) {
-  return (
-    <div className="form">
-      <h2>{title}</h2>
-      <div>{children}</div>
-    </div>
-  );
-}
-
-function Dashboard() {
-  return (
-    <main className="dashboard">
-      <header>
-        <Logo />
-        <button>⇩ Download Report</button>
-      </header>
-
-      <h1>Results Dashboard</h1>
-      <p className="sub">Your simulation results at a glance</p>
-
-      <section className="stats">
-        <Card title="Total Cash" value="$5,000" />
-        <Card title="Monthly Profit" value="$800" green />
-        <Card title="Break Even Months" value="6" />
-        <Card title="Profit Margin" value="19.2%" green />
-      </section>
-
-      <section className="charts-row">
-        <div className="box">
-          <h2>Cost Breakdown</h2>
-
-          <div className="costs">
-            <div className="donut"></div>
-
-            <div className="legend">
-              <p><b className="d blue"></b>Fixed Costs</p>
-              <p><b className="d green"></b>Variable Costs</p>
-              <p><b className="d yellow"></b>Marketing</p>
-              <p><b className="d purple"></b>Other</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="box">
-          <h2>Cash Flow Timeline</h2>
-
-          <div className="linechart">
-            <svg viewBox="0 0 520 230">
-              <polygon points="40,155 105,190 170,150 235,108 300,68 365,58 430,48 500,8 500,220 40,220" />
-              <polyline points="40,155 105,190 170,150 235,108 300,68 365,58 430,48 500,8" />
-              <circle cx="40" cy="155" r="7" />
-              <circle cx="105" cy="190" r="7" />
-              <circle cx="170" cy="150" r="7" />
-              <circle cx="235" cy="108" r="7" />
-              <circle cx="300" cy="68" r="7" />
-              <circle cx="365" cy="58" r="7" />
-              <circle cx="430" cy="48" r="7" />
-              <circle cx="500" cy="8" r="7" />
-            </svg>
-          </div>
-        </div>
-      </section>
-
-      <p className="note">
-        <b>Summary:</b> You will break even in 6 months, with an estimated monthly profit of $800.
-      </p>
-
-      <hr />
-
-      <p className="note">
-        <b>Recommendations:</b> Consider adjusting your marketing expenses to improve your profit margins.
-      </p>
     </main>
   );
 }
 
-function Card({ title, value, green }) {
+function Dashboard({ setPage, formData, results }) {
   return (
-    <div className="stat">
-      <h3>{title}</h3>
-      <strong className={green ? "green-text" : ""}>{value}</strong>
-    </div>
-  );
-}
+    <main className="page dashboard-page">
+      <Navbar setPage={setPage} />
 
-function Scenarios({ page, setPage }) {
-  return (
-    <div className="layout">
-      <Sidebar page={page} setPage={setPage} />
+      <section className="dashboard-card" id="report-area">
+        <div className="dashboard-header">
+          <div>
+            <h1>Results Dashboard</h1>
+            <p>Your simulation results at a glance</p>
+          </div>
 
-      <section className="content">
-        <h1>Scenario Comparison</h1>
-        <p className="sub">Compare different project sizes and outcomes</p>
+          <div className="dashboard-actions">
+            <button className="outline-btn" onClick={() => window.print()}>
+              ⇩ Download Report PDF
+            </button>
+            <button className="upgrade-btn" onClick={() => setPage("pricing")}>
+              ⭐ Upgrade Plan
+            </button>
+          </div>
+        </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              <th>Small</th>
-              <th>Medium</th>
-              <th>Large</th>
-            </tr>
-          </thead>
+        <section className="stats-grid">
+          <Metric title="Total Cash Flow" value={`$${results.totalCash.toLocaleString()}`} />
+          <Metric title="Monthly Profit" value={`$${results.monthlyProfit.toLocaleString()}`} green />
+          <Metric title="Break Even Months" value={results.breakEven} />
+          <Metric title="Profit Margin" value={`${results.profitMargin}%`} green />
+        </section>
 
-          <tbody>
-            <tr>
-              <td>Initial Capital</td>
-              <td>$30,000</td>
-              <td>$50,000</td>
-              <td>$80,000</td>
-            </tr>
+        <section className="charts-grid">
+          <div className="chart-card">
+            <h2>Cost Breakdown</h2>
+            <div className="cost-wrap">
+              <div className="donut-chart"></div>
+              <div className="legend">
+                <p><span className="dot blue"></span>Fixed Costs</p>
+                <p><span className="dot green"></span>Variable Costs</p>
+                <p><span className="dot yellow"></span>Marketing</p>
+                <p><span className="dot purple"></span>Other</p>
+              </div>
+            </div>
+          </div>
 
-            <tr>
-              <td>Monthly Sales</td>
-              <td className="green-text">$5,000</td>
-              <td className="green-text">$7,000</td>
-              <td className="green-text">$12,000</td>
-            </tr>
+          <div className="chart-card">
+            <h2>Cash Flow Timeline</h2>
+            <div className="line-chart">
+              <svg viewBox="0 0 520 230">
+                <polygon points="40,155 105,190 170,150 235,108 300,68 365,58 430,48 500,8 500,220 40,220" />
+                <polyline points="40,155 105,190 170,150 235,108 300,68 365,58 430,48 500,8" />
+                <circle cx="40" cy="155" r="7" />
+                <circle cx="105" cy="190" r="7" />
+                <circle cx="170" cy="150" r="7" />
+                <circle cx="235" cy="108" r="7" />
+                <circle cx="300" cy="68" r="7" />
+                <circle cx="365" cy="58" r="7" />
+                <circle cx="430" cy="48" r="7" />
+                <circle cx="500" cy="8" r="7" />
+              </svg>
+            </div>
+          </div>
+        </section>
 
-            <tr>
-              <td>Monthly Costs</td>
-              <td className="green-text">$4,000</td>
-              <td className="green-text">$6,500</td>
-              <td className="green-text">$10,000</td>
-            </tr>
+        <section className="scenario-table-section">
+          <h2>Scenario Comparison</h2>
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Low Case</th>
+                <th>Average Case</th>
+                <th>High Case</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Initial Capital</td>
+                <td>${Math.round(formData.initialInvestment * 0.7).toLocaleString()}</td>
+                <td>${formData.initialInvestment.toLocaleString()}</td>
+                <td>${Math.round(formData.initialInvestment * 1.4).toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td>Monthly Sales</td>
+                <td className="green-text">${Math.round(formData.monthlySales * 0.8).toLocaleString()}</td>
+                <td className="green-text">${formData.monthlySales.toLocaleString()}</td>
+                <td className="green-text">${Math.round(formData.monthlySales * 1.5).toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td>Monthly Costs</td>
+                <td>${Math.round(formData.monthlyCosts * 0.9).toLocaleString()}</td>
+                <td>${formData.monthlyCosts.toLocaleString()}</td>
+                <td>${Math.round(formData.monthlyCosts * 1.2).toLocaleString()}</td>
+              </tr>
+              <tr>
+                <td>Risk Level</td>
+                <td><span className="risk low">Low</span></td>
+                <td><span className="risk medium">Medium</span></td>
+                <td><span className="risk high">High</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
 
-            <tr>
-              <td>Break Even (Months)</td>
-              <td>4 Months</td>
-              <td>6 Months</td>
-              <td>8 Months</td>
-            </tr>
+        <div className="summary-box">
+          <p><b>Summary:</b> You will break even in {results.breakEven} months, with an estimated monthly profit of ${results.monthlyProfit.toLocaleString()}.</p>
+          <p><b>Recommendations:</b> Consider adjusting your marketing expenses and reducing fixed costs to improve profit margins.</p>
+        </div>
 
-            <tr>
-              <td>Monthly Profit</td>
-              <td>$1,000</td>
-              <td>$500</td>
-              <td>$2,000</td>
-            </tr>
-
-            <tr>
-              <td>Risk Level</td>
-              <td><span className="risk low">Low</span></td>
-              <td><span className="risk medium">Medium</span></td>
-              <td><span className="risk high">High</span></td>
-            </tr>
-          </tbody>
-        </table>
-
-        <button className="use" onClick={() => setPage("dashboard")}>
-          Use This Scenario →
+        <button className="ai-btn" onClick={() => setPage("insights")}>
+          Get AI Recommendations →
         </button>
       </section>
-    </div>
+    </main>
   );
 }
 
-function Insights() {
+function Metric({ title, value, green }) {
   return (
-    <main className="ai">
-      <Logo />
+    <article className="metric-card">
+      <h3>{title}</h3>
+      <strong className={green ? "green-text" : ""}>{value}</strong>
+    </article>
+  );
+}
 
-      <section>
-        <h1>AI Insights</h1>
+function Insights({ setPage, results }) {
+  return (
+    <main className="page ai-page">
+      <Navbar setPage={setPage} />
 
-        <div className="analysis">
+      <section className="ai-card">
+        <div className="dashboard-header">
+          <div>
+            <h1>AI Insights</h1>
+            <p>Personalized recommendations based on your simulation results</p>
+          </div>
+          <button className="outline-btn" onClick={() => setPage("dashboard")}>
+            ← Back to Dashboard
+          </button>
+        </div>
+
+        <div className="analysis-box">
           <h2>AI Analysis</h2>
           <ul>
-            <li>Revenue has been stable with a slight upward trend.</li>
-            <li>Fixed costs are high, impacting overall profitability.</li>
-            <li>Marketing expenses have increased but haven't shown significant return yet.</li>
-            <li>Cash flow is positive, but maintaining it will require careful management.</li>
+            <li>Revenue shows a positive trend, but your fixed costs are still high.</li>
+            <li>Your break-even point is {results.breakEven} months, which is acceptable for a small business.</li>
+            <li>Cash flow looks positive, but maintaining a cash buffer is important.</li>
+            <li>Marketing should focus on high-ROI campaigns instead of random spending.</li>
           </ul>
         </div>
 
-        <div className="recs">
+        <div className="recommend-box">
           <h2>Recommendations</h2>
-          <p>✓ Consider reducing fixed costs by renegotiating leases or finding cheaper suppliers.</p>
-          <p>✓ Optimize your marketing strategy to focus on high-ROI campaigns.</p>
-          <p>✓ Monitor cash flow closely and ensure you have a buffer for unexpected expenses.</p>
+          <p>✓ Reduce fixed costs by renegotiating rent, suppliers, or subscriptions.</p>
+          <p>✓ Track monthly expenses and compare actual results with your simulation.</p>
+          <p>✓ Increase sales gradually before expanding project size.</p>
+          <p>✓ Keep an emergency cash buffer for at least 2-3 months.</p>
         </div>
 
-        <div className="riskbox">
+        <div className="risk-panel">
           <div>
             <h2>Risk Level</h2>
             <h3>Medium Risk</h3>
           </div>
-
-          <div className="gauge">
-            <i></i>
-          </div>
+          <div className="gauge"><i></i></div>
         </div>
       </section>
     </main>
   );
 }
 
-function Pricing() {
+function Pricing({ setPage }) {
   return (
-    <main className="pricing">
-      <h1>Planora</h1>
-      <h2>Pricing / Plans</h2>
-      <p>Choose the best plan for your needs</p>
+    <main className="page pricing-page">
+      <Navbar setPage={setPage} />
 
-      <section className="plans">
-        <Plan
-          name="Free"
-          price="$0"
-          items={["Basic Simulations", "Limited Reports", "Email Support"]}
-          btn="Get Started"
-        />
+      <section className="pricing-card">
+        <h1>Choose Your Plan</h1>
+        <p>Upgrade to unlock more features and simulations</p>
 
-        <Plan
-          name="Pro"
-          price="$9.99"
-          items={["All Features Included", "Advanced Reports", "Scenario Comparisons", "Priority Support"]}
-          btn="Start Pro Trial →"
-          popular
-        />
+        <div className="plans-grid">
+          <Plan title="Free" price="$0" items={["Basic Simulations", "Limited Reports", "Email Support"]} button="Current Plan" />
+          <Plan title="Pro" price="$9.99" items={["All Features Included", "Advanced Reports", "Scenario Comparisons", "Priority Support"]} button="Start Pro Trial →" popular />
+          <Plan title="Premium" price="$19.99" items={["All Pro Features", "Custom Analysis", "Dedicated Consultant", "VIP Support"]} button="Go Premium" />
+        </div>
 
-        <Plan
-          name="Premium"
-          price="$19.99"
-          items={["All Pro Features", "Custom Analysis", "Dedicated Consultant", "VIP Support"]}
-          btn="Go Premium"
-        />
+        <button className="outline-btn back-btn" onClick={() => setPage("simulation")}>
+          ← Back to Simulation
+        </button>
       </section>
     </main>
   );
 }
 
-function Plan({ name, price, items, btn, popular }) {
+function Plan({ title, price, items, button, popular }) {
   return (
-    <div className={popular ? "plan popular" : "plan"}>
-      {popular && <em>Most Popular</em>}
-
-      <h2>{name}</h2>
-      <h3>
-        {price}
-        <span>/ month</span>
-      </h3>
-
-      {items.map((item) => (
-        <p key={item}>✔ {item}</p>
-      ))}
-
-      <button>{btn}</button>
-    </div>
+    <article className={popular ? "plan-card popular" : "plan-card"}>
+      {popular && <span className="popular-badge">Most Popular</span>}
+      <h2>{title}</h2>
+      <h3>{price}<span>/ month</span></h3>
+      <div className="plan-line"></div>
+      {items.map((item) => <p key={item}>✓ {item}</p>)}
+      <button className={popular ? "primary-btn plan-btn" : "outline-plan-btn"}>{button}</button>
+    </article>
   );
 }
 
 export default function App() {
   const [page, setPage] = useState("home");
+  const [formData, setFormData] = useState(initialForm);
+  const [results, setResults] = useState({
+    monthlyProfit: 800,
+    breakEven: 6,
+    profitMargin: 19.2,
+    totalCash: 5000,
+  });
+
+  function calculateResults() {
+    const monthlyProfit = Math.max(formData.monthlySales - formData.monthlyCosts, 0);
+    const breakEven = monthlyProfit > 0 ? Math.ceil(formData.initialInvestment / monthlyProfit) : "N/A";
+    const profitMargin = formData.monthlySales > 0 ? ((monthlyProfit / formData.monthlySales) * 100).toFixed(1) : 0;
+    const totalCash = monthlyProfit * 6 - formData.initialInvestment / 10;
+
+    setResults({
+      monthlyProfit,
+      breakEven,
+      profitMargin,
+      totalCash: Math.max(Math.round(totalCash), 0),
+    });
+  }
 
   if (page === "home") return <Home setPage={setPage} />;
-  if (page === "dashboard") return <Dashboard setPage={setPage} />;
-  if (page === "simulation") return <Simulation page={page} setPage={setPage} />;
-  if (page === "scenarios") return <Scenarios page={page} setPage={setPage} />;
-  if (page === "insights") return <Insights />;
-  if (page === "pricing") return <Pricing />;
+  if (page === "simulation") return <Simulation setPage={setPage} formData={formData} setFormData={setFormData} calculateResults={calculateResults} />;
+  if (page === "dashboard") return <Dashboard setPage={setPage} formData={formData} results={results} />;
+  if (page === "insights") return <Insights setPage={setPage} results={results} />;
+  if (page === "pricing") return <Pricing setPage={setPage} />;
 
   return <Home setPage={setPage} />;
 }
