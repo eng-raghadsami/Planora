@@ -1,5 +1,19 @@
 import { useState } from "react";
 import "./App.css";
+import {
+  FaChartPie,
+  FaArrowUp,
+  FaDollarSign,
+  FaCogs,
+  FaStar,
+  FaDownload,
+  FaArrowRight,
+  FaArrowLeft,
+  FaUsers,
+  FaClock,
+  FaHandshake,
+} from "react-icons/fa";
+import logoPng from "./assets/logo.png";
 
 const initialForm = {
   businessType: "Retail Store",
@@ -13,7 +27,9 @@ const initialForm = {
 function Logo() {
   return (
     <div className="logo">
-      <span className="logo-icon">⬡</span>
+      <div className="logo-img-wrap">
+        <img src={logoPng} alt="Planora" className="logo-img" />
+      </div>
       <span className="logo-text">Planora</span>
     </div>
   );
@@ -54,20 +70,20 @@ function Home({ setPage }) {
             Simulate, predict costs, profits, and analyse cash flow trends to ensure success.
           </p>
           <button className="primary-btn large" onClick={() => setPage("simulation")}>
-            Start Now →
+            Start Now <FaArrowRight style={{ marginLeft: 10 }} />
           </button>
         </div>
 
         <div className="hero-illustration" aria-label="business dashboard illustration">
-          <div className="hero-bg"></div>
-          <div className="icon-card">↗</div>
-          <div className="dollar">$</div>
-          <div className="plant"></div>
+          <div className="hero-bg" />
+          <div className="icon-card"><FaArrowUp /></div>
+          <div className="dollar"><FaDollarSign /></div>
+          <div className="plant" />
 
           <div className="laptop">
             <div className="screen">
-              <div className="screen-line short"></div>
-              <div className="screen-line long"></div>
+              <div className="screen-line short" />
+              <div className="screen-line long" />
 
               <svg className="mini-chart" viewBox="0 0 180 120">
                 <polyline points="12,95 48,68 82,80 120,48 162,23" />
@@ -78,8 +94,8 @@ function Home({ setPage }) {
                 <circle cx="162" cy="23" r="5" />
               </svg>
 
-              <div className="mini-pie"></div>
-              <div className="screen-bars"></div>
+              <div className="mini-pie" />
+              <div className="screen-bars" />
             </div>
           </div>
         </div>
@@ -88,20 +104,58 @@ function Home({ setPage }) {
       <section id="features" className="features-section">
         <h2>Powerful Features</h2>
         <div className="features-grid">
-          <Feature icon="▣" title="Cost Breakdown" text="Understand and categorize expenses." />
-          <Feature icon="↗" title="Profit Prediction" text="Forecast revenues and profits." />
-          <Feature icon="♙" title="Cash Flow Simulation" text="Visualize your future cash flow." />
-          <Feature icon="♧" title="AI Insights" text="Get actionable recommendations." />
+          <Feature icon={<FaChartPie />} title="Cost Breakdown" text="Understand and categorize expenses." />
+          <Feature icon={<FaArrowUp />} title="Profit Prediction" text="Forecast revenues and profits." />
+          <Feature icon={<FaDollarSign />} title="Cash Flow Simulation" text="Visualize your future cash flow." />
+          <Feature icon={<FaCogs />} title="AI Insights" text="Get actionable recommendations." />
         </div>
       </section>
 
       <section id="about" className="about-section">
-        <h2>About Planora</h2>
-        <p>
-          Planora helps small business owners and freelancers test their project idea before
-          spending real money. The platform estimates costs, profit, cash flow, break-even time,
-          and gives useful recommendations.
-        </p>
+        <div className="about-grid">
+          <div className="about-left">
+            <h2>About Planora</h2>
+            <p className="lead">We help founders and freelancers validate business ideas with fast, reliable financial simulations — so you can launch confidently and reduce risk.</p>
+
+            <ul className="about-list">
+              <li>Realistic cash-flow simulations based on your inputs</li>
+              <li>Clear break-even analysis and profit forecasts</li>
+              <li>Actionable AI recommendations to improve margins</li>
+            </ul>
+
+            <div className="about-cta">
+              <button className="outline-btn" onClick={() => setPage("pricing")}>
+                View Pricing
+              </button>
+            </div>
+          </div>
+
+          <aside className="about-right">
+            <div className="stat-card">
+              <FaUsers className="stat-icon" />
+              <div>
+                <strong>10k+</strong>
+                <p>Users helped</p>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <FaClock className="stat-icon" />
+              <div>
+                <strong>Instant</strong>
+                <p>Simulations in seconds</p>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <FaHandshake className="stat-icon" />
+              <div>
+                <strong>Trusted</strong>
+                <p>By small businesses</p>
+              </div>
+            </div>
+          </aside>
+        </div>
       </section>
     </main>
   );
@@ -110,7 +164,7 @@ function Home({ setPage }) {
 function Feature({ icon, title, text }) {
   return (
     <article className="feature-card">
-      <span>{icon}</span>
+      <span className="feature-icon">{icon}</span>
       <h3>{title}</h3>
       <p>{text}</p>
     </article>
@@ -139,7 +193,7 @@ function Simulation({ setPage, formData, setFormData, calculateResults }) {
           </div>
 
           <button className="upgrade-btn" onClick={() => setPage("pricing")}>
-            ⭐ Upgrade Plan
+            <FaStar style={{ marginRight: 8 }} /> Upgrade Plan
           </button>
         </div>
 
@@ -230,7 +284,7 @@ function Simulation({ setPage, formData, setFormData, calculateResults }) {
         </section>
 
         <button className="run-btn" onClick={runSimulation}>
-          Run Simulation →
+          Run Simulation <FaArrowRight style={{ marginLeft: 10 }} />
         </button>
       </section>
     </main>
@@ -251,10 +305,10 @@ function Dashboard({ setPage, formData, results }) {
 
           <div className="dashboard-actions">
             <button className="outline-btn" onClick={() => window.print()}>
-              ⇩ Download Report PDF
+              <FaDownload style={{ marginRight: 8 }} /> Download Report PDF
             </button>
             <button className="upgrade-btn" onClick={() => setPage("pricing")}>
-              ⭐ Upgrade Plan
+              <FaStar style={{ marginRight: 8 }} /> Upgrade Plan
             </button>
           </div>
         </div>
@@ -345,7 +399,7 @@ function Dashboard({ setPage, formData, results }) {
         </div>
 
         <button className="ai-btn" onClick={() => setPage("insights")}>
-          Get AI Recommendations →
+          Get AI Recommendations <FaArrowRight style={{ marginLeft: 10 }} />
         </button>
       </section>
     </main>
@@ -373,7 +427,7 @@ function Insights({ setPage, results }) {
             <p>Personalized recommendations based on your simulation results</p>
           </div>
           <button className="outline-btn" onClick={() => setPage("dashboard")}>
-            ← Back to Dashboard
+            <FaArrowLeft style={{ marginRight: 8 }} /> Back to Dashboard
           </button>
         </div>
 
@@ -418,12 +472,12 @@ function Pricing({ setPage }) {
 
         <div className="plans-grid">
           <Plan title="Free" price="$0" items={["Basic Simulations", "Limited Reports", "Email Support"]} button="Current Plan" />
-          <Plan title="Pro" price="$9.99" items={["All Features Included", "Advanced Reports", "Scenario Comparisons", "Priority Support"]} button="Start Pro Trial →" popular />
+          <Plan title="Pro" price="$9.99" items={["All Features Included", "Advanced Reports", "Scenario Comparisons", "Priority Support"]} button={<><span>Start Pro Trial</span> <FaArrowRight style={{ marginLeft: 8 }} /></>} popular />
           <Plan title="Premium" price="$19.99" items={["All Pro Features", "Custom Analysis", "Dedicated Consultant", "VIP Support"]} button="Go Premium" />
         </div>
 
-        <button className="outline-btn back-btn" onClick={() => setPage("simulation")}>
-          ← Back to Simulation
+        <button className="outline-btn back-btn" onClick={() => setPage("simulation")}> 
+          <FaArrowLeft style={{ marginRight: 8 }} /> Back to Simulation
         </button>
       </section>
     </main>
