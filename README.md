@@ -109,7 +109,7 @@ Includes:
 ## 👩‍💻 Team Members
 
 ### 🎨 Frontend Developer
-**بسملة قاسم**
+**Basmalah Tariq Qassem**
 - UI/UX Design  
 - Frontend Development (React)  
 - User Experience Optimization  
@@ -118,7 +118,7 @@ Includes:
 ---
 
 ### ⚙️ Backend Developer
-**رغد سامي أبو هربيد**
+**Raghad Sami Abuharbid**
 - API Development (Laravel)  
 - Business Logic Implementation  
 - Database Design  
