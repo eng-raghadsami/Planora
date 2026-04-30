@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
 
 import {
@@ -14,6 +14,26 @@ import {
   FaClock,
   FaHandshake,
 } from "react-icons/fa";
+import {
+  BrainCircuit,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Calendar,
+  BarChart2,
+  Shuffle,
+  Lightbulb,
+  Target,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Check,
+  Zap,
+  Layers,
+  BookOpen,
+  LayoutDashboard,
+} from "lucide-react";
 import logoPng from "./assets/logo.png";
 import { simulate, getScenarios, getAI } from "./api";
 
@@ -37,14 +57,68 @@ const LOCATION_PROFILES = {
     Gaza: { costFactor: 0.88, salesFactor: 0.87, volatilityAdjust: 4, rentRange: [500, 850], avgSalary: 420 },
     Ramallah: { costFactor: 1.06, salesFactor: 1.11, volatilityAdjust: -1, rentRange: [950, 1600], avgSalary: 850 },
     Nablus: { costFactor: 0.95, salesFactor: 0.98, volatilityAdjust: 1, rentRange: [700, 1200], avgSalary: 620 },
+    "Bethlehem": { costFactor: 0.98, salesFactor: 1.02, volatilityAdjust: 0, rentRange: [650, 1100], avgSalary: 580 },
+    "Jenin": { costFactor: 0.92, salesFactor: 0.95, volatilityAdjust: 2, rentRange: [600, 1000], avgSalary: 500 },
+    "Tulkarm": { costFactor: 0.93, salesFactor: 0.96, volatilityAdjust: 1, rentRange: [620, 1050], avgSalary: 510 },
+    "Qalqiliya": { costFactor: 0.90, salesFactor: 0.93, volatilityAdjust: 2, rentRange: [550, 900], avgSalary: 480 },
+    "Hebron": { costFactor: 0.89, salesFactor: 0.91, volatilityAdjust: 2, rentRange: [580, 950], avgSalary: 490 },
   },
   Jordan: {
     Amman: { costFactor: 1.1, salesFactor: 1.12, volatilityAdjust: -1, rentRange: [1100, 1900], avgSalary: 920 },
     Irbid: { costFactor: 0.93, salesFactor: 0.94, volatilityAdjust: 1, rentRange: [650, 1050], avgSalary: 560 },
+    Zarqa: { costFactor: 0.91, salesFactor: 0.92, volatilityAdjust: 2, rentRange: [600, 950], avgSalary: 520 },
+    "Salt": { costFactor: 0.88, salesFactor: 0.89, volatilityAdjust: 2, rentRange: [550, 850], avgSalary: 480 },
+    Aqaba: { costFactor: 1.05, salesFactor: 1.08, volatilityAdjust: 0, rentRange: [950, 1500], avgSalary: 780 },
+    Madaba: { costFactor: 0.87, salesFactor: 0.88, volatilityAdjust: 2, rentRange: [520, 800], avgSalary: 450 },
   },
   Egypt: {
     Cairo: { costFactor: 1.02, salesFactor: 1.03, volatilityAdjust: 0, rentRange: [900, 1700], avgSalary: 760 },
     Alexandria: { costFactor: 0.97, salesFactor: 0.99, volatilityAdjust: 1, rentRange: [780, 1350], avgSalary: 660 },
+    Giza: { costFactor: 1.00, salesFactor: 1.01, volatilityAdjust: 0, rentRange: [850, 1600], avgSalary: 720 },
+    Aswan: { costFactor: 0.85, salesFactor: 0.87, volatilityAdjust: 2, rentRange: [550, 950], avgSalary: 500 },
+    Luxor: { costFactor: 0.88, salesFactor: 0.90, volatilityAdjust: 1, rentRange: [600, 1050], avgSalary: 540 },
+    Mansoura: { costFactor: 0.92, salesFactor: 0.94, volatilityAdjust: 1, rentRange: [700, 1200], avgSalary: 600 },
+    Tanta: { costFactor: 0.90, salesFactor: 0.92, volatilityAdjust: 1, rentRange: [680, 1150], avgSalary: 570 },
+  },
+  Lebanon: {
+    Beirut: { costFactor: 1.15, salesFactor: 1.18, volatilityAdjust: -1, rentRange: [1300, 2200], avgSalary: 1100 },
+    Tripoli: { costFactor: 0.95, salesFactor: 0.97, volatilityAdjust: 2, rentRange: [700, 1200], avgSalary: 620 },
+    Sidon: { costFactor: 0.93, salesFactor: 0.95, volatilityAdjust: 1, rentRange: [680, 1100], avgSalary: 580 },
+  },
+  Syria: {
+    Damascus: { costFactor: 0.85, salesFactor: 0.83, volatilityAdjust: 3, rentRange: [500, 900], avgSalary: 450 },
+    Aleppo: { costFactor: 0.82, salesFactor: 0.80, volatilityAdjust: 4, rentRange: [450, 800], avgSalary: 400 },
+  },
+  "United Arab Emirates": {
+    Dubai: { costFactor: 1.35, salesFactor: 1.40, volatilityAdjust: -1, rentRange: [1800, 3000], avgSalary: 1500 },
+    "Abu Dhabi": { costFactor: 1.32, salesFactor: 1.38, volatilityAdjust: 0, rentRange: [1700, 2800], avgSalary: 1450 },
+    Sharjah: { costFactor: 1.15, salesFactor: 1.18, volatilityAdjust: 0, rentRange: [1200, 1900], avgSalary: 1000 },
+  },
+  "Saudi Arabia": {
+    Riyadh: { costFactor: 1.20, salesFactor: 1.22, volatilityAdjust: 0, rentRange: [1400, 2300], avgSalary: 1200 },
+    Jeddah: { costFactor: 1.18, salesFactor: 1.20, volatilityAdjust: 0, rentRange: [1300, 2100], avgSalary: 1100 },
+    Dammam: { costFactor: 1.16, salesFactor: 1.18, volatilityAdjust: 0, rentRange: [1200, 1950], avgSalary: 1050 },
+  },
+  "United Kingdom": {
+    London: { costFactor: 1.50, salesFactor: 1.55, volatilityAdjust: -1, rentRange: [1800, 3500], avgSalary: 1800 },
+    Manchester: { costFactor: 1.20, salesFactor: 1.22, volatilityAdjust: 0, rentRange: [1100, 1900], avgSalary: 1200 },
+    Birmingham: { costFactor: 1.15, salesFactor: 1.17, volatilityAdjust: 0, rentRange: [1000, 1700], avgSalary: 1100 },
+  },
+  "United States": {
+    "New York": { costFactor: 1.60, salesFactor: 1.65, volatilityAdjust: -1, rentRange: [2000, 3800], avgSalary: 2000 },
+    "Los Angeles": { costFactor: 1.55, salesFactor: 1.60, volatilityAdjust: 0, rentRange: [1800, 3500], avgSalary: 1900 },
+    "Chicago": { costFactor: 1.25, salesFactor: 1.28, volatilityAdjust: 0, rentRange: [1200, 2000], avgSalary: 1300 },
+    "Texas": { costFactor: 1.10, salesFactor: 1.12, volatilityAdjust: 0, rentRange: [1000, 1700], avgSalary: 1150 },
+  },
+  Canada: {
+    Toronto: { costFactor: 1.35, salesFactor: 1.38, volatilityAdjust: 0, rentRange: [1400, 2400], avgSalary: 1400 },
+    Vancouver: { costFactor: 1.40, salesFactor: 1.42, volatilityAdjust: 0, rentRange: [1500, 2600], avgSalary: 1500 },
+    Montreal: { costFactor: 1.20, salesFactor: 1.22, volatilityAdjust: 0, rentRange: [1100, 1900], avgSalary: 1200 },
+  },
+  Germany: {
+    Berlin: { costFactor: 1.25, salesFactor: 1.28, volatilityAdjust: 0, rentRange: [1200, 2000], avgSalary: 1300 },
+    Munich: { costFactor: 1.35, salesFactor: 1.38, volatilityAdjust: 0, rentRange: [1400, 2300], avgSalary: 1450 },
+    Hamburg: { costFactor: 1.28, salesFactor: 1.30, volatilityAdjust: 0, rentRange: [1250, 2050], avgSalary: 1350 },
   },
 };
 
@@ -52,9 +126,9 @@ const initialForm = {
   businessType: "Cafe",
   country: "Palestine",
   city: "Gaza",
-  initialInvestment: 50000,
-  monthlySales: 21000,
-  monthlyCosts: 2500,
+  initialInvestment: "",
+  monthlySales: "",
+  monthlyCosts: "",
   advancedMode: false,
   growthExpectation: "slow",
   seasonalityDependence: "low",
@@ -221,26 +295,46 @@ function mapUnexpectedCosts(value) {
   return { month: 7, amount: 2500 };
 }
 
-function getValidationErrors(formData) {
+function getValidationErrors(formData, submitted = false) {
   const errors = {};
   const investment = Number(formData.initialInvestment);
   const sales = Number(formData.monthlySales);
   const costs = Number(formData.monthlyCosts);
 
-  if (!Number.isFinite(investment) || investment < 1000 || investment > 5000000) {
-    errors.initialInvestment = "Initial investment should be between 1,000 and 5,000,000.";
+  const hasInvestment = formData.initialInvestment !== "" && formData.initialInvestment !== null;
+  const hasSales = formData.monthlySales !== "" && formData.monthlySales !== null;
+  const hasCosts = formData.monthlyCosts !== "" && formData.monthlyCosts !== null;
+
+  if (!hasInvestment || !Number.isFinite(investment) || investment < 1000 || investment > 5000000) {
+    if (submitted || (hasInvestment && (!Number.isFinite(investment) || investment < 1000 || investment > 5000000))) {
+      errors.initialInvestment = hasInvestment
+        ? "Initial investment should be between 1,000 and 5,000,000."
+        : "Initial investment is required.";
+    }
   }
-  if (!Number.isFinite(sales) || sales < 500 || sales > 2000000) {
-    errors.monthlySales = "Expected monthly sales should be between 500 and 2,000,000.";
+  if (!hasSales || !Number.isFinite(sales) || sales < 500 || sales > 2000000) {
+    if (submitted || (hasSales && (!Number.isFinite(sales) || sales < 500 || sales > 2000000))) {
+      errors.monthlySales = hasSales
+        ? "Expected monthly sales should be between 500 and 2,000,000."
+        : "Expected monthly sales is required.";
+    }
   }
-  if (!Number.isFinite(costs) || costs < 100 || costs > 1500000) {
-    errors.monthlyCosts = "Monthly costs should be between 100 and 1,500,000.";
+  if (!hasCosts || !Number.isFinite(costs) || costs < 100 || costs > 1500000) {
+    if (submitted || (hasCosts && (!Number.isFinite(costs) || costs < 100 || costs > 1500000))) {
+      errors.monthlyCosts = hasCosts
+        ? "Monthly costs should be between 100 and 1,500,000."
+        : "Monthly costs is required.";
+    }
   }
-  if (Number.isFinite(sales) && Number.isFinite(costs) && costs > sales * 2.5) {
+  if (hasSales && hasCosts && Number.isFinite(sales) && Number.isFinite(costs) && costs > sales * 2.5) {
     errors.monthlyCosts = "Monthly costs look too high compared to monthly sales.";
   }
 
   return errors;
+}
+
+function hasRequiredFields(formData) {
+  return formData.initialInvestment !== "" && formData.monthlySales !== "" && formData.monthlyCosts !== "";
 }
 
 function buildSimulationPayload(formData) {
@@ -402,6 +496,125 @@ function buildDonutGradient(costItems) {
   });
 
   return `conic-gradient(${ranges.join(",")})`;
+}
+
+/* ─── Custom AI Neural-Orb Icon ──────────────────────────── */
+function AIPlanetIcon({ size = 34 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="aip-grad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#818cf8" />
+          <stop offset="45%" stopColor="#3b82f6" />
+          <stop offset="100%" stopColor="#06b6d4" />
+        </linearGradient>
+        <radialGradient id="aip-shine" cx="36%" cy="28%" r="55%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.42)" />
+          <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+        </radialGradient>
+      </defs>
+      {/* Outer glow ring */}
+      <circle cx="24" cy="24" r="23" fill="none" stroke="url(#aip-grad)" strokeWidth="1" strokeOpacity="0.35" />
+      {/* Main orb */}
+      <circle cx="24" cy="24" r="19" fill="url(#aip-grad)" />
+      <circle cx="24" cy="24" r="19" fill="url(#aip-shine)" />
+      {/* Hexagonal neural nodes */}
+      <circle cx="24"   cy="9.5"  r="2.8" fill="white" opacity="0.93" />
+      <circle cx="36"   cy="16.5" r="2.2" fill="white" opacity="0.78" />
+      <circle cx="36"   cy="31.5" r="2.8" fill="white" opacity="0.93" />
+      <circle cx="24"   cy="38.5" r="2.2" fill="white" opacity="0.78" />
+      <circle cx="12"   cy="31.5" r="2.8" fill="white" opacity="0.93" />
+      <circle cx="12"   cy="16.5" r="2.2" fill="white" opacity="0.78" />
+      {/* Outer ring connections */}
+      <line x1="24" y1="9.5"  x2="36" y2="16.5" stroke="white" strokeWidth="1.3" strokeOpacity="0.55" />
+      <line x1="36" y1="16.5" x2="36" y2="31.5" stroke="white" strokeWidth="1.3" strokeOpacity="0.55" />
+      <line x1="36" y1="31.5" x2="24" y2="38.5" stroke="white" strokeWidth="1.3" strokeOpacity="0.55" />
+      <line x1="24" y1="38.5" x2="12" y2="31.5" stroke="white" strokeWidth="1.3" strokeOpacity="0.55" />
+      <line x1="12" y1="31.5" x2="12" y2="16.5" stroke="white" strokeWidth="1.3" strokeOpacity="0.55" />
+      <line x1="12" y1="16.5" x2="24" y2="9.5"  stroke="white" strokeWidth="1.3" strokeOpacity="0.55" />
+      {/* Spokes to center (dashed) */}
+      <line x1="24" y1="24" x2="24"   y2="9.5"  stroke="white" strokeWidth="0.9" strokeOpacity="0.28" strokeDasharray="2 2.5" />
+      <line x1="24" y1="24" x2="36"   y2="16.5" stroke="white" strokeWidth="0.9" strokeOpacity="0.28" strokeDasharray="2 2.5" />
+      <line x1="24" y1="24" x2="36"   y2="31.5" stroke="white" strokeWidth="0.9" strokeOpacity="0.28" strokeDasharray="2 2.5" />
+      <line x1="24" y1="24" x2="24"   y2="38.5" stroke="white" strokeWidth="0.9" strokeOpacity="0.28" strokeDasharray="2 2.5" />
+      <line x1="24" y1="24" x2="12"   y2="31.5" stroke="white" strokeWidth="0.9" strokeOpacity="0.28" strokeDasharray="2 2.5" />
+      <line x1="24" y1="24" x2="12"   y2="16.5" stroke="white" strokeWidth="0.9" strokeOpacity="0.28" strokeDasharray="2 2.5" />
+      {/* Center node */}
+      <circle cx="24" cy="24" r="4.2" fill="white" opacity="0.96" />
+      <circle cx="24" cy="24" r="2.2" fill="url(#aip-grad)" />
+    </svg>
+  );
+}
+
+/* ─── PDF Generation (html2canvas + jsPDF) ──────────────── */
+async function downloadReport(elementId, filename = "planora-report.pdf") {
+  const element = document.getElementById(elementId);
+  if (!element) { window.print(); return; }
+
+  // Reveal hidden AI tab panels for full capture
+  const hiddenPanels = [...element.querySelectorAll(".ai-tab-panel")];
+  const prevPanelDisplay = hiddenPanels.map((p) => p.style.display);
+  hiddenPanels.forEach((p) => { p.style.display = "block"; });
+
+  // Reveal rec bodies
+  const recBodies = [...element.querySelectorAll(".ai-rec-body")];
+  const prevRecDisplay = recBodies.map((r) => r.style.display);
+  recBodies.forEach((r) => { r.style.display = "block"; });
+
+  // Unwrap cashflow horizontal scroll
+  const track = element.querySelector(".cashflow-cards-track");
+  const prevTrack = track ? { overflow: track.style.overflowX, wrap: track.style.flexWrap } : null;
+  if (track) { track.style.overflowX = "visible"; track.style.flexWrap = "wrap"; }
+
+  // Hide interactive chrome
+  const toHide = [
+    ...element.querySelectorAll(".ai-chat-panel, .ai-tab-nav, .zoom-controls, .chart-toolbar button, .dashboard-actions, .ai-header-actions"),
+  ];
+  const prevHideDisplay = toHide.map((el) => el.style.display);
+  toHide.forEach((el) => { el.style.display = "none"; });
+
+  try {
+    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+      import("html2canvas"),
+      import("jspdf"),
+    ]);
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: "#f7f9fc",
+      logging: false,
+    });
+
+    const imgData = canvas.toDataURL("image/jpeg", 0.95);
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pw = pdf.internal.pageSize.getWidth();
+    const ph = pdf.internal.pageSize.getHeight();
+    const ratio = pw / canvas.width;
+    const sh = canvas.height * ratio;
+
+    let pageY = 0;
+    let remaining = sh;
+    pdf.addImage(imgData, "JPEG", 0, pageY, pw, sh);
+    remaining -= ph;
+    while (remaining > 0) {
+      pageY -= ph;
+      pdf.addPage();
+      pdf.addImage(imgData, "JPEG", 0, pageY, pw, sh);
+      remaining -= ph;
+    }
+
+    pdf.save(filename);
+  } catch (err) {
+    console.error("PDF generation failed, falling back to print:", err);
+    window.print();
+  } finally {
+    hiddenPanels.forEach((p, i) => { p.style.display = prevPanelDisplay[i]; });
+    recBodies.forEach((r, i) => { r.style.display = prevRecDisplay[i]; });
+    if (track && prevTrack) { track.style.overflowX = prevTrack.overflow; track.style.flexWrap = prevTrack.wrap; }
+    toHide.forEach((el, i) => { el.style.display = prevHideDisplay[i]; });
+  }
 }
 
 function Logo({ onClick }) {
@@ -791,8 +1004,10 @@ function Simulation({
   onGoAbout,
   onStartSimulation,
 }) {
-  const validationErrors = getValidationErrors(formData);
-  const hasValidationErrors = Object.keys(validationErrors).length > 0;
+  const [submitted, setSubmitted] = useState(false);
+  const validationErrors = getValidationErrors(formData, submitted);
+  const hasValidationErrors = !hasRequiredFields(formData) || Object.keys(getValidationErrors(formData, true)).length > 0;
+  const visibleErrors = getValidationErrors(formData, submitted);
   const defaults = BUSINESS_DEFAULTS[formData.businessType] || BUSINESS_DEFAULTS.Cafe;
   const cityOptions = getCityOptions(formData.country);
   const locationProfile = getLocationProfile(formData.country, formData.city);
@@ -816,6 +1031,7 @@ function Simulation({
   }
 
   async function runSimulation() {
+    setSubmitted(true);
     if (hasValidationErrors) {
       return;
     }
@@ -930,7 +1146,7 @@ function Simulation({
                 value={formData.initialInvestment}
                 onChange={(e) => updateField("initialInvestment", Number(e.target.value))}
               />
-              {validationErrors.initialInvestment ? <small className="field-error">{validationErrors.initialInvestment}</small> : null}
+              {visibleErrors.initialInvestment ? <small className="field-error">{visibleErrors.initialInvestment}</small> : null}
             </label>
 
             <label>
@@ -941,7 +1157,7 @@ function Simulation({
                 value={formData.monthlySales}
                 onChange={(e) => updateField("monthlySales", Number(e.target.value))}
               />
-              {validationErrors.monthlySales ? <small className="field-error">{validationErrors.monthlySales}</small> : null}
+              {visibleErrors.monthlySales ? <small className="field-error">{visibleErrors.monthlySales}</small> : null}
             </label>
 
             <label>
@@ -952,7 +1168,7 @@ function Simulation({
                 value={formData.monthlyCosts}
                 onChange={(e) => updateField("monthlyCosts", Number(e.target.value))}
               />
-              {validationErrors.monthlyCosts ? <small className="field-error">{validationErrors.monthlyCosts}</small> : null}
+              {visibleErrors.monthlyCosts ? <small className="field-error">{visibleErrors.monthlyCosts}</small> : null}
             </label>
           </div>
         </section>
@@ -1044,7 +1260,7 @@ function Simulation({
           </section>
         ) : null}
 
-        {hasValidationErrors ? <p className="error-text">Please fix highlighted fields before running simulation.</p> : null}
+        {submitted && hasValidationErrors ? <p className="error-text">Please fill in all required fields before running simulation.</p> : null}
         {error ? <p className="error-text">{error}</p> : null}
 
         <button className="run-btn" type="button" onClick={runSimulation} disabled={loading || hasValidationErrors}>
@@ -1143,7 +1359,7 @@ function Dashboard({
           </div>
 
           <div className="dashboard-actions">
-            <button className="outline-btn" onClick={() => window.print()}>
+            <button className="outline-btn" onClick={() => downloadReport("report-area", "planora-dashboard.pdf")}>
               <FaDownload style={{ marginRight: 8 }} /> Download Report PDF
             </button>
             <button className="upgrade-btn" onClick={() => setPage("pricing")}>
@@ -1232,63 +1448,13 @@ function Dashboard({
           </div>
         </section>
 
-        <section className="scenario-table-section">
+        <section className="scenario-section">
           <h2>Scenario Comparison</h2>
-          {scenarioData ? (
-            <table>
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Low Case</th>
-                  <th>Average Case</th>
-                  <th>High Case</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Initial Capital</td>
-                  <td>{formatCurrency(lowCase?.initial_capital)}</td>
-                  <td>{formatCurrency(averageCase?.initial_capital)}</td>
-                  <td>{formatCurrency(highCase?.initial_capital)}</td>
-                </tr>
-                <tr>
-                  <td>Monthly Sales</td>
-                  <td className="green-text">{formatCurrency(lowCase?.monthly_sales)}</td>
-                  <td className="green-text">{formatCurrency(averageCase?.monthly_sales)}</td>
-                  <td className="green-text">{formatCurrency(highCase?.monthly_sales)}</td>
-                </tr>
-                <tr>
-                  <td>Monthly Costs</td>
-                  <td>{formatCurrency(lowCase?.monthly_costs)}</td>
-                  <td>{formatCurrency(averageCase?.monthly_costs)}</td>
-                  <td>{formatCurrency(highCase?.monthly_costs)}</td>
-                </tr>
-                <tr>
-                  <td>Monthly Profit</td>
-                  <td>{formatCurrency(lowCase?.monthly_profit)}</td>
-                  <td>{formatCurrency(averageCase?.monthly_profit)}</td>
-                  <td>{formatCurrency(highCase?.monthly_profit)}</td>
-                </tr>
-                <tr>
-                  <td>Break-even (months)</td>
-                  <td>{lowCase?.break_even_months ?? "N/A"}</td>
-                  <td>{averageCase?.break_even_months ?? "N/A"}</td>
-                  <td>{highCase?.break_even_months ?? "N/A"}</td>
-                </tr>
-                <tr>
-                  <td>Risk Level</td>
-                  <td><span className={`risk ${String(lowCase?.risk_level || "").toLowerCase()}`}>{formatRisk(lowCase?.risk_level)}</span></td>
-                  <td><span className={`risk ${String(averageCase?.risk_level || "").toLowerCase()}`}>{formatRisk(averageCase?.risk_level)}</span></td>
-                  <td><span className={`risk ${String(highCase?.risk_level || "").toLowerCase()}`}>{formatRisk(highCase?.risk_level)}</span></td>
-                </tr>
-              </tbody>
-            </table>
-          ) : (
-            <p>No scenario data available.</p>
-          )}
+          <p className="section-subtitle">Explore three different business scenarios to understand your potential outcomes</p>
+          <ScenarioComparisonCards scenarioData={scenarioData} />
         </section>
 
-        <section className="scenario-table-section">
+        <section className="location-section">
           <h2>Location Comparison</h2>
           <button
             type="button"
@@ -1300,7 +1466,7 @@ function Dashboard({
           {showLocationCompare ? (
             compareCandidates.length > 0 ? (
               <>
-                <div style={{ marginTop: 12 }}>
+                <div className="location-selector" style={{ marginTop: 12 }}>
                   <label>
                     <HintLabel text="Compare City" hint="We estimate impact on sales, costs, and risk using city profiles." />
                     <select value={compareCity} onChange={(e) => setSelectedCompareCity(e.target.value)}>
@@ -1313,38 +1479,9 @@ function Dashboard({
                   </label>
                 </div>
                 {locationComparison ? (
-                  <>
-                    <table style={{ marginTop: 14 }}>
-                      <thead>
-                        <tr>
-                          <th>City</th>
-                          <th>Monthly Sales</th>
-                          <th>Monthly Costs</th>
-                          <th>Monthly Profit</th>
-                          <th>Risk</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>{locationComparison.baseRow.city}</td>
-                          <td>{formatCurrency(locationComparison.baseRow.monthlySales)}</td>
-                          <td>{formatCurrency(locationComparison.baseRow.monthlyCosts)}</td>
-                          <td>{formatCurrency(locationComparison.baseRow.monthlyProfit)}</td>
-                          <td>{locationComparison.baseRow.riskLevel}</td>
-                        </tr>
-                        <tr>
-                          <td>{locationComparison.compareRow.city}</td>
-                          <td>{formatCurrency(locationComparison.compareRow.monthlySales)}</td>
-                          <td>{formatCurrency(locationComparison.compareRow.monthlyCosts)}</td>
-                          <td>{formatCurrency(locationComparison.compareRow.monthlyProfit)}</td>
-                          <td>{locationComparison.compareRow.riskLevel}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <p style={{ marginTop: 10 }}>
-                      <b>Better location:</b> {locationComparison.betterLocation}
-                    </p>
-                  </>
+                  <div style={{ marginTop: 20 }}>
+                    <LocationComparisonCards comparison={locationComparison} />
+                  </div>
                 ) : null}
               </>
             ) : (
@@ -1360,26 +1497,10 @@ function Dashboard({
           <p><b>AI Analysis:</b> {aiData?.analysis || "AI analysis not available yet."}</p>
         </div>
 
-        <section className="scenario-table-section">
-          <h2>Monthly Cash Flow Cards</h2>
-          <div className="month-cards-track">
-            {cashFlow.map((item) => (
-              <button
-                type="button"
-                key={`month-card-${item.month}`}
-                className={`month-card ${activeMonth?.month === item.month ? "active" : ""}`}
-                onMouseEnter={() => setSelectedMonth(item)}
-                onClick={() => setSelectedMonth(item)}
-              >
-                <h4>Month {item.month}</h4>
-                <p>Revenue: {formatCurrency(item.revenue)}</p>
-                <p>Cost: {formatCurrency(item.cost)}</p>
-                <p className={Number(item.profit) >= 0 ? "green-text" : "red-text"}>Profit: {formatCurrency(item.profit)}</p>
-                <p>Balance: {formatCurrency(item.balance)}</p>
-                <small>{getCashFlowReasons(item.month, breakdown).join(" + ")}</small>
-              </button>
-            ))}
-          </div>
+        <section className="cashflow-section">
+          <h2>Monthly Cash Flow</h2>
+          <p className="section-subtitle">Hover or click cards to explore monthly performance details</p>
+          <EnhancedCashFlowCards cashFlow={cashFlow} breakdown={breakdown} selectedMonth={activeMonth} onSelectMonth={setSelectedMonth} />
         </section>
 
         <button className="ai-btn" onClick={() => setPage("insights")}>
@@ -1399,60 +1520,369 @@ function Metric({ title, value, green }) {
   );
 }
 
-function buildAdvancedRecommendations(results, aiData) {
-  const recs = Array.isArray(aiData?.recommendations) ? aiData.recommendations : [];
-  const monthlyProfit = Number(results?.monthlyProfit ?? 0);
-  const breakEven = results?.breakEven;
-
-  return [
-    {
-      title: "Immediate Next Step",
-      priority: "High",
-      text: recs[0] || (monthlyProfit <= 0 ? "Cut non-essential monthly costs and protect cash runway immediately." : "Track weekly margin and lock what is already working."),
-    },
-    {
-      title: "30-60 Day Focus",
-      priority: "Medium",
-      text: recs[1] || (breakEven && breakEven > 12 ? "Improve conversion and pricing to reduce break-even period." : "Scale the strongest channel gradually while watching cost growth."),
-    },
-    {
-      title: "Risk Watch",
-      priority: "Medium",
-      text: recs[2] || "Prepare a contingency budget for seasonal dips and unexpected costs.",
-    },
+function ScenarioComparisonCards({ scenarioData }) {
+  if (!scenarioData) return <p>No scenario data available.</p>;
+  
+  const scenarios = [
+    { key: "low_case", label: "Low Case", icon: "📉", description: "Conservative estimate" },
+    { key: "average_case", label: "Average Case", icon: "📊", description: "Expected scenario" },
+    { key: "high_case", label: "High Case", icon: "📈", description: "Optimistic scenario" },
   ];
+
+  return (
+    <div className="scenario-cards-grid">
+      {scenarios.map(({ key, label, icon, description }) => {
+        const data = scenarioData[key];
+        return (
+          <article key={key} className="scenario-card">
+            <div className="scenario-header">
+              <span className="scenario-icon">{icon}</span>
+              <div>
+                <h3>{label}</h3>
+                <p>{description}</p>
+              </div>
+            </div>
+            <div className="scenario-metrics">
+              <div className="metric-item">
+                <span className="metric-label">Initial Capital</span>
+                <strong>{formatCurrency(data.initial_capital)}</strong>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Monthly Sales</span>
+                <strong className="green-text">{formatCurrency(data.monthly_sales)}</strong>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Monthly Costs</span>
+                <strong>{formatCurrency(data.monthly_costs)}</strong>
+              </div>
+              <div className="metric-item highlight">
+                <span className="metric-label">Monthly Profit</span>
+                <strong className={Number(data.monthly_profit) >= 0 ? "green-text" : "red-text"}>
+                  {formatCurrency(data.monthly_profit)}
+                </strong>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Break-even</span>
+                <strong>{data.break_even_months ?? "N/A"} mo</strong>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Risk Level</span>
+                <span className={`risk risk-badge ${String(data.risk_level || "").toLowerCase()}`}>
+                  {formatRisk(data.risk_level)}
+                </span>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
 }
 
-function buildAIPlaybook(results, scenarioData) {
-  const monthlyProfit = Number(results?.monthlyProfit ?? 0);
-  const breakEven = Number(results?.breakEven ?? 0);
-  const lowCaseProfit = Number(scenarioData?.low_case?.monthly_profit ?? 0);
-  const highCaseProfit = Number(scenarioData?.high_case?.monthly_profit ?? 0);
-  const spread = highCaseProfit - lowCaseProfit;
+function LocationComparisonCards({ comparison }) {
+  if (!comparison) return null;
 
-  return [
+  const { baseRow, compareRow, betterLocation } = comparison;
+  
+  const LocationCard = ({ city, data, isBetter }) => (
+    <article className={`location-card ${isBetter ? "better" : ""}`}>
+      <div className="location-header">
+        <h3>{city}</h3>
+        {isBetter && <span className="better-badge">Better Option</span>}
+      </div>
+      <div className="location-metrics">
+        <div className="metric-item">
+          <span className="metric-label">Monthly Sales</span>
+          <strong>{formatCurrency(data.monthlySales)}</strong>
+        </div>
+        <div className="metric-item">
+          <span className="metric-label">Monthly Costs</span>
+          <strong>{formatCurrency(data.monthlyCosts)}</strong>
+        </div>
+        <div className="metric-item highlight">
+          <span className="metric-label">Monthly Profit</span>
+          <strong className={data.monthlyProfit >= 0 ? "green-text" : "red-text"}>
+            {formatCurrency(data.monthlyProfit)}
+          </strong>
+        </div>
+        <div className="metric-item">
+          <span className="metric-label">Risk Level</span>
+          <span className={`risk risk-badge ${String(data.riskLevel || "").toLowerCase()}`}>
+            {data.riskLevel}
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+
+  return (
+    <div className="location-comparison-container">
+      <LocationCard city={baseRow.city} data={baseRow} isBetter={betterLocation === baseRow.city} />
+      <div className="vs-divider">VS</div>
+      <LocationCard city={compareRow.city} data={compareRow} isBetter={betterLocation === compareRow.city} />
+    </div>
+  );
+}
+
+function EnhancedCashFlowCards({ cashFlow, breakdown, selectedMonth, onSelectMonth }) {
+  return (
+    <div className="cashflow-cards-container">
+      <div className="cashflow-cards-track">
+        {cashFlow.map((item) => {
+          const isPositive = Number(item.profit) >= 0;
+          const isSelected = selectedMonth?.month === item.month;
+          return (
+            <button
+              type="button"
+              key={`month-card-${item.month}`}
+              className={`cashflow-card ${isPositive ? "positive" : "negative"} ${isSelected ? "active" : ""}`}
+              onClick={() => onSelectMonth(item)}
+              onMouseEnter={() => onSelectMonth(item)}
+            >
+              <div className="card-header">
+                <h4>Month {item.month}</h4>
+                <span className={`profit-badge ${isPositive ? "positive" : "negative"}`}>
+                  {isPositive ? "+" : ""}{formatCurrency(item.profit)}
+                </span>
+              </div>
+              <div className="card-metrics">
+                <div className="mini-metric">
+                  <small>Revenue</small>
+                  <span>{formatCurrency(item.revenue)}</span>
+                </div>
+                <div className="mini-metric">
+                  <small>Cost</small>
+                  <span>{formatCurrency(item.cost)}</span>
+                </div>
+                <div className="mini-metric">
+                  <small>Balance</small>
+                  <span className={Number(item.balance) >= 0 ? "green-text" : "red-text"}>
+                    {formatCurrency(item.balance)}
+                  </span>
+                </div>
+              </div>
+              <small className="card-reason">{getCashFlowReasons(item.month, breakdown).join(" • ")}</small>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Interactive AI Chat Panel ──────────────────────────── */
+function AIChatPanel({ aiData, results, scenarioData }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeQ, setActiveQ] = useState(null);
+  const [displayed, setDisplayed] = useState("");
+  const [typing, setTyping] = useState(false);
+  const timerRef = useRef(null);
+
+  const monthlyProfit = Number(results?.monthlyProfit ?? 0);
+  const riskLevel = aiData?.risk_level ?? "medium";
+  const healthScore = Number(aiData?.health_score ?? 0);
+
+  const QUESTIONS = [
     {
-      title: "Opportunity Signal",
-      tone: "good",
-      text: monthlyProfit > 0
-        ? `Current plan is profitable (${formatCurrency(monthlyProfit)}/month). Focus on repeatable channels.`
-        : "Current setup is not profitable yet. Re-price or reduce operating costs before scaling.",
+      id: "risk",
+      label: "What's my biggest risk?",
+      answer() {
+        const w = aiData?.weaknesses?.[0] ?? "";
+        return `Your risk level is ${riskLevel}. ${w ? `Main concern: ${w}` : "Monitor your cash flow closely every month."}`;
+      },
     },
     {
-      title: "Risk Signal",
-      tone: spread > Math.max(3000, Math.abs(monthlyProfit) * 0.9) ? "warn" : "neutral",
-      text: spread > Math.max(3000, Math.abs(monthlyProfit) * 0.9)
-        ? `Scenario spread is high (${formatCurrency(spread)}). Keep extra cash buffer for volatility.`
-        : "Scenario spread is moderate. Variance risk is manageable with monthly tracking.",
+      id: "profit",
+      label: "How can I improve profitability?",
+      answer() {
+        const r = aiData?.recommendations?.[0];
+        if (r && typeof r === "object") return `${r.title}: ${r.text}`;
+        if (typeof r === "string") return r;
+        return monthlyProfit > 0
+          ? "You're already profitable! Scale your strongest revenue channel and reinvest surplus."
+          : "Reduce fixed costs or increase pricing to reach break-even faster.";
+      },
     },
     {
-      title: "Execution Focus",
-      tone: breakEven > 12 ? "warn" : "good",
-      text: breakEven > 12
-        ? `Break-even is ${breakEven} months. Prioritize conversion and pricing experiments now.`
-        : `Break-even is ${breakEven || "N/A"} months. Keep growth disciplined and protect margin.`,
+      id: "focus",
+      label: "What should I focus on first?",
+      answer() {
+        const a = aiData?.action_items?.[0];
+        return a ?? "Track actual monthly expenses vs. your estimates to identify cost-saving opportunities.";
+      },
+    },
+    {
+      id: "health",
+      label: "Is my financial health good?",
+      answer() {
+        const lbl = healthScore >= 70 ? "Great" : healthScore >= 45 ? "Fair" : "At Risk";
+        const s = aiData?.strengths?.[0] ?? "";
+        return `Your Financial Health Score is ${healthScore}/100 — ${lbl}.${s ? ` Key strength: ${s}` : ""}`;
+      },
+    },
+    {
+      id: "scenario",
+      label: "How uncertain is my outcome?",
+      answer() {
+        const low = Number(scenarioData?.low_case?.monthly_profit ?? 0);
+        const high = Number(scenarioData?.high_case?.monthly_profit ?? 0);
+        const spread = high - low;
+        return `Your scenario spread is ${formatCurrency(spread)} (${formatCurrency(low)} to ${formatCurrency(high)}/mo). ${spread > 5000 ? "High variance — keep a solid cash buffer for volatility." : "Variance is manageable with consistent monthly tracking."}`;
+      },
     },
   ];
+
+  function handleQ(q) {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (activeQ === q.id) {
+      setActiveQ(null);
+      setDisplayed("");
+      setTyping(false);
+      return;
+    }
+    setActiveQ(q.id);
+    const full = q.answer();
+    setDisplayed("");
+    setTyping(true);
+    let i = 0;
+    timerRef.current = setInterval(() => {
+      i++;
+      setDisplayed(full.slice(0, i));
+      if (i >= full.length) {
+        clearInterval(timerRef.current);
+        setTyping(false);
+      }
+    }, 12);
+  }
+
+  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+
+  return (
+    <div className="ai-chat-panel">
+      <button type="button" className="ai-chat-toggle" onClick={() => setIsOpen((p) => !p)}>
+        <AIPlanetIcon size={20} />
+        <span>Ask AI about your simulation</span>
+        {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+      </button>
+      {isOpen && (
+        <div className="ai-chat-body">
+          <p className="ai-chat-hint">Select a question to get an AI-generated insight:</p>
+          <div className="ai-chat-questions">
+            {QUESTIONS.map((q) => (
+              <button
+                key={q.id}
+                type="button"
+                className={`ai-question-chip ${activeQ === q.id ? "active" : ""}`}
+                onClick={() => handleQ(q)}
+              >
+                {q.label}
+              </button>
+            ))}
+          </div>
+          {activeQ && (
+            <div className="ai-chat-answer">
+              <div className="ai-answer-icon">
+                <AIPlanetIcon size={24} />
+              </div>
+              <p className="ai-answer-text">
+                {displayed}
+                {typing && <span className="ai-cursor">▌</span>}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const PRIORITY_COLORS = { High: "#e43135", Medium: "#f09020", Low: "#18a878" };
+const CATEGORY_ICONS  = {
+  "Cost Control": "💡",
+  "Revenue":      "📈",
+  "Cash Flow":    "💵",
+  "Marketing":    "📣",
+  "Monitoring":   "📊",
+  "Growth":       "🚀",
+  "Investment":   "💼",
+};
+
+function HealthScoreRing({ score }) {
+  const radius = 54;
+  const circ   = 2 * Math.PI * radius;
+  const offset = circ - (score / 100) * circ;
+  const color  = score >= 70 ? "#18a878" : score >= 45 ? "#f09020" : "#e43135";
+  const label  = score >= 70 ? "Great" : score >= 45 ? "Fair" : "At Risk";
+
+  return (
+    <div className="health-ring-wrap">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r={radius} fill="none" stroke="#e5ebf3" strokeWidth="12" />
+        <circle
+          cx="70" cy="70" r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth="12"
+          strokeDasharray={circ}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          transform="rotate(-90 70 70)"
+          style={{ transition: "stroke-dashoffset 1s ease, stroke 0.4s ease" }}
+        />
+        <text x="70" y="65" textAnchor="middle" fontSize="28" fontWeight="900" fill={color}>{score}</text>
+        <text x="70" y="84" textAnchor="middle" fontSize="13" fontWeight="700" fill="#5a6a85">{label}</text>
+      </svg>
+      <p className="health-ring-label">Financial Health Score</p>
+    </div>
+  );
+}
+
+function RiskGauge({ riskLevel }) {
+  const level = String(riskLevel || "medium").toLowerCase();
+  const rotation = level === "low" ? -58 : level === "high" ? 58 : 0;
+  const color    = level === "low" ? "#18a878" : level === "high" ? "#e43135" : "#f09020";
+  const label    = level === "low" ? "Low Risk" : level === "high" ? "High Risk" : "Medium Risk";
+
+  return (
+    <div className="ai-gauge-wrap">
+      <div className="ai-gauge">
+        <svg width="200" height="110" viewBox="0 0 200 110">
+          {/* arc segments */}
+          <path d="M 20 100 A 80 80 0 0 1 60 27" fill="none" stroke="#e43135" strokeWidth="14" strokeLinecap="round" />
+          <path d="M 64 24 A 80 80 0 0 1 136 24" fill="none" stroke="#f09020" strokeWidth="14" strokeLinecap="round" />
+          <path d="M 140 27 A 80 80 0 0 1 180 100" fill="none" stroke="#18a878" strokeWidth="14" strokeLinecap="round" />
+          {/* needle */}
+          <g transform={`rotate(${rotation}, 100, 100)`} style={{ transition: "transform 0.8s ease" }}>
+            <line x1="100" y1="100" x2="100" y2="32" stroke="#071b46" strokeWidth="4" strokeLinecap="round" />
+            <circle cx="100" cy="100" r="7" fill="#071b46" />
+          </g>
+        </svg>
+      </div>
+      <p className="ai-gauge-label" style={{ color }}>{label}</p>
+    </div>
+  );
+}
+
+const AI_TABS = [
+  { id: "overview",       label: "Overview",        Icon: LayoutDashboard },
+  { id: "analysis",       label: "Analysis",        Icon: BrainCircuit },
+  { id: "recommendations",label: "Recommendations", Icon: Layers },
+  { id: "playbook",       label: "Playbook",        Icon: BookOpen },
+];
+
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  function handleCopy() {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+  return (
+    <button type="button" className="copy-btn" onClick={handleCopy} title="Copy insight">
+      {copied ? <Check size={13} /> : <Copy size={13} />}
+    </button>
+  );
 }
 
 function Insights({
@@ -1468,8 +1898,57 @@ function Insights({
   onGoAbout,
   onStartSimulation,
 }) {
-  const advancedRecommendations = buildAdvancedRecommendations(results, aiData);
-  const aiPlaybook = buildAIPlaybook(results, scenarioData);
+  const [activeRec, setActiveRec]   = useState(null);
+  const [activeTab, setActiveTab]   = useState("overview");
+  const [allRecsOpen, setAllRecsOpen] = useState(false);
+
+  const healthScore    = Number(aiData?.health_score ?? 0);
+  const riskLevel      = aiData?.risk_level ?? "medium";
+  const analysis       = aiData?.analysis ?? "Run a simulation to generate analysis.";
+  const keyInsights    = Array.isArray(aiData?.key_insights)    ? aiData.key_insights    : [];
+  const strengths      = Array.isArray(aiData?.strengths)       ? aiData.strengths       : [];
+  const weaknesses     = Array.isArray(aiData?.weaknesses)      ? aiData.weaknesses      : [];
+  const recommendations= Array.isArray(aiData?.recommendations) ? aiData.recommendations : [];
+  const actionItems    = Array.isArray(aiData?.action_items)    ? aiData.action_items    : [];
+
+  const monthlyProfit  = Number(results?.monthlyProfit ?? 0);
+  const breakEven      = results?.breakEven;
+  const profitMargin   = results?.profitMargin ?? "0.0";
+
+  const lowCaseProfit  = Number(scenarioData?.low_case?.monthly_profit  ?? 0);
+  const highCaseProfit = Number(scenarioData?.high_case?.monthly_profit ?? 0);
+  const spread         = highCaseProfit - lowCaseProfit;
+  const spreadHigh     = spread > Math.max(3000, Math.abs(monthlyProfit) * 0.9);
+
+  const playbookItems = [
+    {
+      Icon: Lightbulb,
+      title: "Opportunity Signal",
+      tone: monthlyProfit > 0 ? "good" : "warn",
+      text: monthlyProfit > 0
+        ? `Current plan is profitable (${formatCurrency(monthlyProfit)}/mo). Reinvest and scale the strongest channels.`
+        : "Current setup is not yet profitable. Re-price or reduce costs before scaling.",
+    },
+    {
+      Icon: AlertTriangle,
+      title: "Risk Signal",
+      tone: spreadHigh ? "warn" : "neutral",
+      text: spreadHigh
+        ? `Scenario spread is high (${formatCurrency(spread)}). Keep an extra cash buffer to handle volatility.`
+        : "Scenario spread is moderate. Variance risk is manageable with monthly tracking.",
+    },
+    {
+      Icon: Target,
+      title: "Execution Focus",
+      tone: breakEven && breakEven > 12 ? "warn" : "good",
+      text: breakEven && breakEven > 12
+        ? `Break-even is ${breakEven} months. Prioritize conversion and pricing experiments now.`
+        : `Break-even is ${breakEven ?? "N/A"} months. Keep growth disciplined and protect margin.`,
+    },
+  ];
+
+  /* which recs to show: all or just first */
+  const visibleRecs = allRecsOpen ? recommendations : recommendations.slice(0, 2);
 
   return (
     <main className="page ai-page">
@@ -1483,60 +1962,247 @@ function Insights({
         onStartSimulation={onStartSimulation}
       />
 
-      <section className="ai-card">
+      <section className="ai-card" id="ai-report-area">
+
+        {/* ── Header ── */}
         <div className="dashboard-header">
-          <div>
-            <h1>AI Insights</h1>
-            <p>Personalized recommendations based on your simulation results</p>
+          <div className="ai-page-title">
+            <div className="ai-brain-icon-wrap">
+              <AIPlanetIcon size={32} />
+            </div>
+            <div>
+              <h1>AI Insights</h1>
+              <p>Personalized analysis based on your simulation results</p>
+            </div>
           </div>
-          <button className="outline-btn" onClick={() => setPage("dashboard")}>
-            <FaArrowLeft style={{ marginRight: 8 }} /> Back to Dashboard
-          </button>
+          <div className="ai-header-actions">
+            <button className="outline-btn ai-print-btn" onClick={() => downloadReport("ai-report-area", "planora-ai-insights.pdf")}>
+              <FaDownload style={{ marginRight: 8 }} /> Download PDF
+            </button>
+            <button className="outline-btn" onClick={() => setPage("dashboard")}>
+              <FaArrowLeft style={{ marginRight: 8 }} /> Dashboard
+            </button>
+          </div>
         </div>
 
-        <div className="analysis-box">
-          <h2>AI Analysis</h2>
-          <ul>
-            <li>{aiData?.analysis || "Run a simulation to generate analysis."}</li>
-            <li>Break-even estimate: {results?.breakEven ?? "N/A"} months.</li>
-            <li>Monthly profit estimate: {formatCurrency(results?.monthlyProfit)}</li>
-          </ul>
+        {/* ── Interactive AI Chat Panel ── */}
+        <AIChatPanel aiData={aiData} results={results} scenarioData={scenarioData} />
+
+        {/* ── Tab Navigation ── */}
+        <div className="ai-tab-nav" role="tablist">
+          {AI_TABS.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={activeTab === id}
+              className={`ai-tab-btn ${activeTab === id ? "active" : ""}`}
+              onClick={() => setActiveTab(id)}
+            >
+              <Icon size={16} strokeWidth={1.8} />
+              {label}
+            </button>
+          ))}
         </div>
 
-        <div className="recommend-box">
-          <h2>Strategic Recommendations</h2>
-          <div className="recommend-grid">
-            {advancedRecommendations.map((rec, index) => (
-              <article key={`advanced-rec-${index}`} className="recommend-card">
-                <div className="recommend-header">
-                  <strong>{rec.title}</strong>
-                  <span>{rec.priority}</span>
+        {/* ═══════════════ OVERVIEW TAB ═══════════════ */}
+        {activeTab === "overview" && (
+          <div className="ai-tab-panel">
+            <div className="ai-overview-row">
+              <HealthScoreRing score={healthScore} />
+
+              <div className="ai-kpi-grid">
+                <div className="ai-kpi-card">
+                  <span className="ai-kpi-icon-wrap" style={{ background: "#e8f7f1" }}>
+                    <DollarSign size={18} color="#18a878" strokeWidth={2} />
+                  </span>
+                  <div>
+                    <small>Monthly Profit</small>
+                    <strong className={monthlyProfit >= 0 ? "green-text" : "red-text"}>{formatCurrency(monthlyProfit)}</strong>
+                  </div>
                 </div>
-                <p>{rec.text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
+                <div className="ai-kpi-card">
+                  <span className="ai-kpi-icon-wrap" style={{ background: "#e8f0fb" }}>
+                    <Calendar size={18} color="#2d86df" strokeWidth={2} />
+                  </span>
+                  <div>
+                    <small>Break-even</small>
+                    <strong>{breakEven ?? "N/A"} months</strong>
+                  </div>
+                </div>
+                <div className="ai-kpi-card">
+                  <span className="ai-kpi-icon-wrap" style={{ background: "#fff3e0" }}>
+                    <BarChart2 size={18} color="#f09020" strokeWidth={2} />
+                  </span>
+                  <div>
+                    <small>Profit Margin</small>
+                    <strong className={Number(profitMargin) >= 0 ? "green-text" : "red-text"}>{profitMargin}%</strong>
+                  </div>
+                </div>
+                <div className="ai-kpi-card">
+                  <span className="ai-kpi-icon-wrap" style={{ background: spreadHigh ? "#fce8e5" : "#e8f7f1" }}>
+                    <Shuffle size={18} color={spreadHigh ? "#e43135" : "#18a878"} strokeWidth={2} />
+                  </span>
+                  <div>
+                    <small>Scenario Spread</small>
+                    <strong className={spreadHigh ? "red-text" : "green-text"}>{formatCurrency(spread)}</strong>
+                  </div>
+                </div>
+              </div>
 
-        <div className="ai-playbook-box">
-          <h2>AI Playbook</h2>
-          <div className="playbook-grid">
-            {aiPlaybook.map((item, index) => (
-              <article key={`playbook-${index}`} className={`playbook-card ${item.tone}`}>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
+              <RiskGauge riskLevel={riskLevel} />
+            </div>
 
-        <div className="risk-panel">
-          <div>
-            <h2>Risk Level</h2>
-            <h3>{formatRisk(aiData?.risk_level)}</h3>
+            {/* Quick summary */}
+            <div className="ai-summary-banner">
+              <AIPlanetIcon size={24} />
+              <p>{analysis}</p>
+            </div>
+
+            {/* Quick wins inline */}
+            {actionItems.length > 0 && (
+              <div className="ai-actions-box">
+                <h2><Zap size={18} style={{ verticalAlign: "middle", marginRight: 6 }} /> Quick Wins</h2>
+                <p className="section-subtitle">Actionable steps you can start today</p>
+                <ol className="ai-actions-list">
+                  {actionItems.map((item, i) => (
+                    <li key={`action-${i}`}>{item}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
           </div>
-          <div className="gauge"><i></i></div>
-        </div>
+        )}
+
+        {/* ═══════════════ ANALYSIS TAB ═══════════════ */}
+        {activeTab === "analysis" && (
+          <div className="ai-tab-panel">
+            {/* Analysis block */}
+            <div className="ai-analysis-card">
+              <div className="ai-analysis-header">
+                <div className="ai-brain-icon-wrap large">
+                  <AIPlanetIcon size={34} />
+                </div>
+                <div>
+                  <h2>AI Analysis</h2>
+                  <p>{analysis}</p>
+                </div>
+              </div>
+
+              {keyInsights.length > 0 && (
+                <ul className="ai-insights-list">
+                  {keyInsights.map((insight, i) => (
+                    <li key={`insight-${i}`}>
+                      <span className="insight-dot"></span>
+                      <span className="insight-text">{insight}</span>
+                      <CopyButton text={insight} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Strengths & Weaknesses */}
+            <div className="ai-sw-row">
+              <div className="ai-sw-card strengths">
+                <h3><TrendingUp size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Strengths</h3>
+                <ul>
+                  {strengths.map((s, i) => <li key={`s-${i}`}>{s}</li>)}
+                </ul>
+              </div>
+              <div className="ai-sw-card weaknesses">
+                <h3><TrendingDown size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Weaknesses</h3>
+                <ul>
+                  {weaknesses.map((w, i) => <li key={`w-${i}`}>{w}</li>)}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════ RECOMMENDATIONS TAB ═══════════════ */}
+        {activeTab === "recommendations" && (
+          <div className="ai-tab-panel">
+            <div className="ai-section-block">
+              <h2>Strategic Recommendations</h2>
+              <p className="section-subtitle">Click a card to expand the full recommendation</p>
+              <div className="ai-rec-grid">
+                {visibleRecs.map((rec, index) => {
+                  const isObj    = typeof rec === "object";
+                  const title    = isObj ? rec.title    : `Recommendation ${index + 1}`;
+                  const text     = isObj ? rec.text     : rec;
+                  const priority = isObj ? rec.priority : "Medium";
+                  const category = isObj ? rec.category : "";
+                  const impact   = isObj ? rec.impact   : "";
+                  const isOpen   = activeRec === index;
+                  return (
+                    <article
+                      key={`rec-${index}`}
+                      className={`ai-rec-card ${isOpen ? "open" : ""}`}
+                      onClick={() => setActiveRec(isOpen ? null : index)}
+                    >
+                      <div className="ai-rec-top">
+                        <span className="ai-rec-cat-icon">{CATEGORY_ICONS[category] ?? "📌"}</span>
+                        <div className="ai-rec-meta">
+                          <strong>{title}</strong>
+                          <span className="ai-rec-category">{category}</span>
+                        </div>
+                        <div className="ai-rec-badges">
+                          <span className="ai-priority-badge" style={{ background: PRIORITY_COLORS[priority] + "22", color: PRIORITY_COLORS[priority], borderColor: PRIORITY_COLORS[priority] + "55" }}>{priority}</span>
+                        </div>
+                        <span className="ai-rec-chevron">
+                          {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </span>
+                      </div>
+                      {isOpen && (
+                        <div className="ai-rec-body">
+                          <p>{text}</p>
+                          {impact && <span className="ai-impact-tag">Impact: {impact}</span>}
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+              {recommendations.length > 2 && (
+                <button type="button" className="ai-show-more-btn" onClick={() => setAllRecsOpen(p => !p)}>
+                  {allRecsOpen ? <><ChevronUp size={15} /> Show less</> : <><ChevronDown size={15} /> Show all {recommendations.length} recommendations</>}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════ PLAYBOOK TAB ═══════════════ */}
+        {activeTab === "playbook" && (
+          <div className="ai-tab-panel">
+            <div className="ai-section-block">
+              <h2>AI Playbook</h2>
+              <p className="section-subtitle">Signal-based execution guide derived from your simulation data</p>
+              <div className="playbook-grid">
+                {playbookItems.map((item, index) => (
+                  <article key={`playbook-${index}`} className={`playbook-card ${item.tone}`}>
+                    <item.Icon size={22} strokeWidth={1.8} className="playbook-lucide-icon" />
+                    <h3>{item.title}</h3>
+                    <p>{item.text}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            {actionItems.length > 0 && (
+              <div className="ai-actions-box" style={{ marginTop: 24 }}>
+                <h2><Zap size={18} style={{ verticalAlign: "middle", marginRight: 6 }} /> Quick Wins</h2>
+                <p className="section-subtitle">Actionable steps you can start today</p>
+                <ol className="ai-actions-list">
+                  {actionItems.map((item, i) => (
+                    <li key={`action-${i}`}>{item}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
+        )}
+
       </section>
     </main>
   );
@@ -1653,9 +2319,19 @@ export default function App() {
 
       const simulationData = await simulate(payload);
       const scenarios = await getScenarios(payload);
+      const monthlyRevenueFull = Number(simulationData.monthly_revenue ?? 0);
+      const monthlyProfitFull  = Number(simulationData.monthly_profit ?? 0);
+      const profitMarginFull   = monthlyRevenueFull > 0
+        ? parseFloat(((monthlyProfitFull / monthlyRevenueFull) * 100).toFixed(1))
+        : 0;
+
       const ai = await getAI({
-        monthly_profit: Number(simulationData.monthly_profit ?? 0),
-        break_even_months: simulationData.break_even_months,
+        monthly_profit:     monthlyProfitFull,
+        break_even_months:  simulationData.break_even_months,
+        monthly_sales:      monthlyRevenueFull,
+        monthly_costs:      Number(simulationData.monthly_cost ?? 0),
+        initial_investment: Number(simulationData.total_cost ?? 0),
+        profit_margin:      profitMarginFull,
       });
 
       const monthlyRevenue = Number(simulationData.monthly_revenue ?? 0);
