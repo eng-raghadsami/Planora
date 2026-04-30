@@ -24,8 +24,34 @@ const BUSINESS_DEFAULTS = {
   "Freelance Service": { employees: 2, monthlyCosts: 900, projectSize: "Small", seasonalityProfile: "flat" },
 };
 
+const LOCATION_DEFAULT_PROFILE = {
+  costFactor: 1,
+  salesFactor: 1,
+  volatilityAdjust: 0,
+  rentRange: [700, 1300],
+  avgSalary: 600,
+};
+
+const LOCATION_PROFILES = {
+  Palestine: {
+    Gaza: { costFactor: 0.88, salesFactor: 0.87, volatilityAdjust: 4, rentRange: [500, 850], avgSalary: 420 },
+    Ramallah: { costFactor: 1.06, salesFactor: 1.11, volatilityAdjust: -1, rentRange: [950, 1600], avgSalary: 850 },
+    Nablus: { costFactor: 0.95, salesFactor: 0.98, volatilityAdjust: 1, rentRange: [700, 1200], avgSalary: 620 },
+  },
+  Jordan: {
+    Amman: { costFactor: 1.1, salesFactor: 1.12, volatilityAdjust: -1, rentRange: [1100, 1900], avgSalary: 920 },
+    Irbid: { costFactor: 0.93, salesFactor: 0.94, volatilityAdjust: 1, rentRange: [650, 1050], avgSalary: 560 },
+  },
+  Egypt: {
+    Cairo: { costFactor: 1.02, salesFactor: 1.03, volatilityAdjust: 0, rentRange: [900, 1700], avgSalary: 760 },
+    Alexandria: { costFactor: 0.97, salesFactor: 0.99, volatilityAdjust: 1, rentRange: [780, 1350], avgSalary: 660 },
+  },
+};
+
 const initialForm = {
   businessType: "Cafe",
+  country: "Palestine",
+  city: "Gaza",
   initialInvestment: 50000,
   monthlySales: 21000,
   monthlyCosts: 2500,
@@ -37,6 +63,92 @@ const initialForm = {
   marketStability: "moderate",
   salesConfidence: "medium",
 };
+
+function getCountryOptions() {
+  return Object.keys(LOCATION_PROFILES);
+}
+
+function getCityOptions(country) {
+  const countryProfile = LOCATION_PROFILES[country];
+  if (!countryProfile) {
+    return Object.keys(LOCATION_PROFILES.Palestine);
+  }
+  return Object.keys(countryProfile);
+}
+
+function getLocationProfile(country, city) {
+  return LOCATION_PROFILES[country]?.[city] || LOCATION_DEFAULT_PROFILE;
+}
+
+function getLocationLabel(country, city) {
+  return `${city}, ${country}`;
+}
+
+function riskLevelToScore(riskLevel) {
+  if (String(riskLevel).toLowerCase() === "high") {
+    return 3;
+  }
+  if (String(riskLevel).toLowerCase() === "medium") {
+    return 2;
+  }
+  return 1;
+}
+
+function scoreToRiskLevel(score) {
+  if (score >= 2.5) {
+    return "High";
+  }
+  if (score >= 1.5) {
+    return "Medium";
+  }
+  return "Low";
+}
+
+function buildLocationComparison(input) {
+  const {
+    country,
+    baseCity,
+    compareCity,
+    monthlySales,
+    monthlyCosts,
+    baseRiskLevel,
+  } = input;
+
+  if (!compareCity) {
+    return null;
+  }
+
+  const baseProfile = getLocationProfile(country, baseCity);
+  const compareProfile = getLocationProfile(country, compareCity);
+  const safeSales = Math.max(0, Number(monthlySales) || 0);
+  const safeCosts = Math.max(0, Number(monthlyCosts) || 0);
+
+  const baseRow = {
+    city: baseCity,
+    monthlySales: safeSales,
+    monthlyCosts: safeCosts,
+    monthlyProfit: safeSales - safeCosts,
+    riskLevel: formatRisk(baseRiskLevel),
+  };
+
+  const salesFactor = compareProfile.salesFactor / Math.max(baseProfile.salesFactor, 0.01);
+  const costsFactor = compareProfile.costFactor / Math.max(baseProfile.costFactor, 0.01);
+  const compareSales = safeSales * salesFactor;
+  const compareCosts = safeCosts * costsFactor;
+  const compareRiskScore = Math.max(1, Math.min(3, riskLevelToScore(baseRiskLevel) + (compareProfile.volatilityAdjust - baseProfile.volatilityAdjust) / 3));
+
+  const compareRow = {
+    city: compareCity,
+    monthlySales: compareSales,
+    monthlyCosts: compareCosts,
+    monthlyProfit: compareSales - compareCosts,
+    riskLevel: scoreToRiskLevel(compareRiskScore),
+  };
+
+  const betterLocation = compareRow.monthlyProfit > baseRow.monthlyProfit ? compareRow.city : baseRow.city;
+
+  return { baseRow, compareRow, betterLocation };
+}
 
 function projectSizeFromCapital(capital) {
   if (capital >= 120000) {
@@ -133,6 +245,7 @@ function getValidationErrors(formData) {
 
 function buildSimulationPayload(formData) {
   const defaults = BUSINESS_DEFAULTS[formData.businessType] || BUSINESS_DEFAULTS.Cafe;
+  const locationProfile = getLocationProfile(formData.country, formData.city);
   const projectSize = projectSizeFromCapital(Number(formData.initialInvestment));
   const employees = defaults.employees;
   const marketing = mapMarketingPlan(formData.marketingPlan);
@@ -144,7 +257,7 @@ function buildSimulationPayload(formData) {
   return {
     capital: Number(formData.initialInvestment),
     size: projectSize,
-    project_type: formData.businessType,
+    project_type: `${formData.businessType} (${getLocationLabel(formData.country, formData.city)})`,
     monthly_sales: Number(formData.monthlySales),
     monthly_costs: Number(formData.monthlyCosts),
     employees,
@@ -152,7 +265,7 @@ function buildSimulationPayload(formData) {
     seasonality_strength_percent: seasonality.strength,
     monthly_growth_percent: mapGrowthExpectation(formData.growthExpectation),
     cost_growth_percent: 0.6,
-    volatility_percent: Math.max(0, Math.min(30, baseVolatility + mapSalesConfidenceAdjust(formData.salesConfidence))),
+    volatility_percent: Math.max(0, Math.min(30, baseVolatility + mapSalesConfidenceAdjust(formData.salesConfidence) + locationProfile.volatilityAdjust)),
     shock_month: unexpected.month,
     shock_amount: unexpected.amount,
     campaign_month: marketing.month,
@@ -681,6 +794,9 @@ function Simulation({
   const validationErrors = getValidationErrors(formData);
   const hasValidationErrors = Object.keys(validationErrors).length > 0;
   const defaults = BUSINESS_DEFAULTS[formData.businessType] || BUSINESS_DEFAULTS.Cafe;
+  const cityOptions = getCityOptions(formData.country);
+  const locationProfile = getLocationProfile(formData.country, formData.city);
+  const suggestedCosts = Math.round(defaults.monthlyCosts * locationProfile.costFactor);
   const basicComplete = !hasValidationErrors;
   const advancedComplete = formData.advancedMode
     ? Boolean(formData.growthExpectation && formData.seasonalityDependence && formData.marketStability)
@@ -695,7 +811,7 @@ function Simulation({
   function applySmartSuggestions() {
     setFormData((prev) => ({
       ...prev,
-      monthlyCosts: defaults.monthlyCosts,
+      monthlyCosts: suggestedCosts,
     }));
   }
 
@@ -763,8 +879,45 @@ function Simulation({
               </select>
             </label>
 
+            <label>
+              <HintLabel text="Country" hint="Choose where your project will run. Example: Palestine." />
+              <select
+                value={formData.country}
+                onChange={(e) => {
+                  const nextCountry = e.target.value;
+                  const firstCity = getCityOptions(nextCountry)[0];
+                  setFormData((prev) => ({
+                    ...prev,
+                    country: nextCountry,
+                    city: firstCity,
+                  }));
+                }}
+              >
+                {getCountryOptions().map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <HintLabel text="City" hint="Pick your target city. Example: Gaza." />
+              <select
+                value={formData.city}
+                onChange={(e) => updateField("city", e.target.value)}
+              >
+                {cityOptions.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <div className="smart-box">
-              <p><b>Smart Suggestion:</b> For {formData.businessType}, typical fixed costs start around {formatCurrency(defaults.monthlyCosts)} and average team size is {defaults.employees}.</p>
+              <p><b>Smart Suggestion:</b> For {formData.businessType} in {formData.city}, typical fixed costs start around {formatCurrency(suggestedCosts)} and average team size is {defaults.employees}.</p>
+              <p><b>Local signal:</b> Typical rent range in {formData.city} is {formatCurrency(locationProfile.rentRange[0])} to {formatCurrency(locationProfile.rentRange[1])}, and average salary is around {formatCurrency(locationProfile.avgSalary)}.</p>
               <button type="button" className="outline-btn" onClick={applySmartSuggestions}>
                 Use Suggested Costs
               </button>
@@ -817,7 +970,7 @@ function Simulation({
             <h2>Advanced Mode</h2>
             <div className="form-grid">
               <label>
-                <HintLabel text="Do you expect your sales to grow over time?" hint="Growth helps improve cash flow month by month." />
+                <HintLabel text="Do you expect your sales to grow over time?" hint="Example: choose Slow growth if you expect steady sales increase over the year." />
                 <select
                   value={formData.growthExpectation}
                   onChange={(e) => updateField("growthExpectation", e.target.value)}
@@ -829,7 +982,7 @@ function Simulation({
               </label>
 
               <label>
-                <HintLabel text="Does your business depend on seasons?" hint="Some businesses drop in summer and rise in winter (or the opposite)." />
+                <HintLabel text="Does your business depend on seasons?" hint="Example: tourism and cafes may rise in one season and drop in another." />
                 <select
                   value={formData.seasonalityDependence}
                   onChange={(e) => updateField("seasonalityDependence", e.target.value)}
@@ -841,7 +994,7 @@ function Simulation({
               </label>
 
               <label>
-                <HintLabel text="How stable is your market?" hint="Stable means predictable demand. Unstable means sharp ups and downs." />
+                <HintLabel text="Is your market predictable or changing a lot?" hint="Example: predictable demand = stable, frequent swings = unstable." />
                 <select
                   value={formData.marketStability}
                   onChange={(e) => updateField("marketStability", e.target.value)}
@@ -853,7 +1006,7 @@ function Simulation({
               </label>
 
               <label>
-                <HintLabel text="How confident are you in your sales estimate?" hint="Lower confidence means we simulate wider fluctuations." />
+                <HintLabel text="How sure are you about your sales estimate?" hint="Example: if your estimate is still rough, choose Low confidence." />
                 <select
                   value={formData.salesConfidence}
                   onChange={(e) => updateField("salesConfidence", e.target.value)}
@@ -865,7 +1018,7 @@ function Simulation({
               </label>
 
               <label>
-                <HintLabel text="Marketing effort level" hint="Stronger campaigns usually create short-term revenue boosts." />
+                <HintLabel text="Marketing effort level" hint="Example: a strong launch campaign can create a short-term sales spike." />
                 <select
                   value={formData.marketingPlan}
                   onChange={(e) => updateField("marketingPlan", e.target.value)}
@@ -877,7 +1030,7 @@ function Simulation({
               </label>
 
               <label>
-                <HintLabel text="Unexpected costs risk" hint="Choose how likely surprise expenses are for your project." />
+                <HintLabel text="Unexpected costs risk" hint="Example: maintenance, legal fees, or urgent fixes can appear suddenly." />
                 <select
                   value={formData.unexpectedCosts}
                   onChange={(e) => updateField("unexpectedCosts", e.target.value)}
@@ -907,6 +1060,7 @@ function Dashboard({
   results,
   scenarioData,
   aiData,
+  formData,
   onGoHome,
   onGoFeatures,
   onGoHowItWorks,
@@ -918,6 +1072,14 @@ function Dashboard({
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [hoveredCostKey, setHoveredCostKey] = useState(null);
+  const [showLocationCompare, setShowLocationCompare] = useState(false);
+  const activeCountry = formData?.country || initialForm.country;
+  const activeCity = formData?.city || initialForm.city;
+  const compareCandidates = getCityOptions(activeCountry).filter((city) => city !== activeCity);
+  const [selectedCompareCity, setSelectedCompareCity] = useState("");
+  const compareCity = compareCandidates.includes(selectedCompareCity)
+    ? selectedCompareCity
+    : (compareCandidates[0] || "");
 
   if (!results) {
     return (
@@ -952,6 +1114,14 @@ function Dashboard({
   const lowCase = scenarioData?.low_case;
   const averageCase = scenarioData?.average_case;
   const highCase = scenarioData?.high_case;
+  const locationComparison = buildLocationComparison({
+    country: activeCountry,
+    baseCity: activeCity,
+    compareCity,
+    monthlySales: formData?.monthlySales,
+    monthlyCosts: formData?.monthlyCosts,
+    baseRiskLevel: results.raw?.risk_level || aiData?.risk_level || "medium",
+  });
 
   return (
     <main className="page dashboard-page">
@@ -1118,8 +1288,74 @@ function Dashboard({
           )}
         </section>
 
+        <section className="scenario-table-section">
+          <h2>Location Comparison</h2>
+          <button
+            type="button"
+            className="outline-btn"
+            onClick={() => setShowLocationCompare((prev) => !prev)}
+          >
+            {showLocationCompare ? "Hide comparison" : "Compare with another location"}
+          </button>
+          {showLocationCompare ? (
+            compareCandidates.length > 0 ? (
+              <>
+                <div style={{ marginTop: 12 }}>
+                  <label>
+                    <HintLabel text="Compare City" hint="We estimate impact on sales, costs, and risk using city profiles." />
+                    <select value={compareCity} onChange={(e) => setSelectedCompareCity(e.target.value)}>
+                      {compareCandidates.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                {locationComparison ? (
+                  <>
+                    <table style={{ marginTop: 14 }}>
+                      <thead>
+                        <tr>
+                          <th>City</th>
+                          <th>Monthly Sales</th>
+                          <th>Monthly Costs</th>
+                          <th>Monthly Profit</th>
+                          <th>Risk</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{locationComparison.baseRow.city}</td>
+                          <td>{formatCurrency(locationComparison.baseRow.monthlySales)}</td>
+                          <td>{formatCurrency(locationComparison.baseRow.monthlyCosts)}</td>
+                          <td>{formatCurrency(locationComparison.baseRow.monthlyProfit)}</td>
+                          <td>{locationComparison.baseRow.riskLevel}</td>
+                        </tr>
+                        <tr>
+                          <td>{locationComparison.compareRow.city}</td>
+                          <td>{formatCurrency(locationComparison.compareRow.monthlySales)}</td>
+                          <td>{formatCurrency(locationComparison.compareRow.monthlyCosts)}</td>
+                          <td>{formatCurrency(locationComparison.compareRow.monthlyProfit)}</td>
+                          <td>{locationComparison.compareRow.riskLevel}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <p style={{ marginTop: 10 }}>
+                      <b>Better location:</b> {locationComparison.betterLocation}
+                    </p>
+                  </>
+                ) : null}
+              </>
+            ) : (
+              <p style={{ marginTop: 10 }}>No alternative cities configured for this country yet.</p>
+            )
+          ) : null}
+        </section>
+
         <div className="summary-box">
           <p><b>Summary:</b> You will break even in {results.breakEven ?? "N/A"} months, with an estimated monthly profit of {formatCurrency(results.monthlyProfit)}.</p>
+          <p><b>Location:</b> {getLocationLabel(activeCountry, activeCity)}</p>
           <p><b>Seasonality:</b> {seasonalityLabel(breakdown.seasonality_profile)} ({breakdown.seasonality_strength_percent ?? 0}%)</p>
           <p><b>AI Analysis:</b> {aiData?.analysis || "AI analysis not available yet."}</p>
         </div>
@@ -1487,6 +1723,7 @@ export default function App() {
         results={results}
         scenarioData={scenarioData}
         aiData={aiData}
+        formData={formData}
         onGoHome={goHome}
         onGoFeatures={() => goToSection("features")}
         onGoHowItWorks={() => goToSection("how-it-works")}
