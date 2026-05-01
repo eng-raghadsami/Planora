@@ -760,8 +760,8 @@ function Home({
           <p>
             Build realistic scenarios, preview cash flow movement, and make confident launch decisions.
           </p>
-          <button className="primary-btn large" onClick={onGoPricing || onStartSimulation}>
-            View Pricing <FaArrowRight style={{ marginLeft: 10 }} />
+          <button className="primary-btn large" onClick={onStartSimulation}>
+            Start Now <FaArrowRight style={{ marginLeft: 10 }} />
           </button>
 
           <div className="home-live-strip">
