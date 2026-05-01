@@ -637,6 +637,7 @@ function Navbar({
   onGoFaq,
   onGoAbout,
   onStartSimulation,
+  onGoPricing,
 }) {
   return (
     <header className="navbar">
@@ -651,8 +652,8 @@ function Navbar({
         <button onClick={onGoAbout}>About</button>
       </nav>
 
-      <button className="primary-btn" onClick={onStartSimulation}>
-        Start Simulation
+      <button className="primary-btn" onClick={onGoPricing || onStartSimulation}>
+        View Pricing
       </button>
     </header>
   );
@@ -667,6 +668,7 @@ function Home({
   onGoFaq,
   onGoAbout,
   onStartSimulation,
+  onGoPricing,
 }) {
   const [plannerMode, setPlannerMode] = useState("balance");
   const [reservePercent, setReservePercent] = useState(36);
@@ -741,6 +743,7 @@ function Home({
         onGoFaq={onGoFaq}
         onGoAbout={onGoAbout}
         onStartSimulation={onStartSimulation}
+        onGoPricing={onGoPricing}
       />
 
       <section
@@ -757,8 +760,8 @@ function Home({
           <p>
             Build realistic scenarios, preview cash flow movement, and make confident launch decisions.
           </p>
-          <button className="primary-btn large" onClick={onStartSimulation}>
-            Start Now <FaArrowRight style={{ marginLeft: 10 }} />
+          <button className="primary-btn large" onClick={onGoPricing || onStartSimulation}>
+            View Pricing <FaArrowRight style={{ marginLeft: 10 }} />
           </button>
 
           <div className="home-live-strip">
@@ -1004,6 +1007,7 @@ function Simulation({
   onGoFaq,
   onGoAbout,
   onStartSimulation,
+  onGoPricing,
 }) {
   const [submitted, setSubmitted] = useState(false);
   const validationErrors = getValidationErrors(formData, submitted);
@@ -1052,6 +1056,7 @@ function Simulation({
         onGoFaq={onGoFaq}
         onGoAbout={onGoAbout}
         onStartSimulation={onStartSimulation}
+        onGoPricing={onGoPricing}
       />
 
       <section className="simulation-card">
@@ -1285,6 +1290,7 @@ function Dashboard({
   onGoFaq,
   onGoAbout,
   onStartSimulation,
+  onGoPricing,
 }) {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState(null);
@@ -1301,7 +1307,7 @@ function Dashboard({
   if (!results) {
     return (
       <main className="page dashboard-page">
-        <Navbar
+      <Navbar
           onGoHome={onGoHome}
           onGoFeatures={onGoFeatures}
           onGoHowItWorks={onGoHowItWorks}
@@ -1309,6 +1315,7 @@ function Dashboard({
           onGoFaq={onGoFaq}
           onGoAbout={onGoAbout}
           onStartSimulation={onStartSimulation}
+          onGoPricing={onGoPricing}
         />
         <section className="dashboard-card">
           <h1>Results Dashboard</h1>
@@ -1350,6 +1357,7 @@ function Dashboard({
         onGoFaq={onGoFaq}
         onGoAbout={onGoAbout}
         onStartSimulation={onStartSimulation}
+        onGoPricing={onGoPricing}
       />
 
       <section className="dashboard-card" id="report-area">
@@ -1898,6 +1906,7 @@ function Insights({
   onGoFaq,
   onGoAbout,
   onStartSimulation,
+  onGoPricing,
 }) {
   const [activeRec, setActiveRec]   = useState(null);
   const [activeTab, setActiveTab]   = useState("overview");
@@ -1961,6 +1970,7 @@ function Insights({
         onGoFaq={onGoFaq}
         onGoAbout={onGoAbout}
         onStartSimulation={onStartSimulation}
+        onGoPricing={onGoPricing}
       />
 
       <section className="ai-card" id="ai-report-area">
@@ -2442,6 +2452,7 @@ function Pricing({
   onGoFaq,
   onGoAbout,
   onStartSimulation,
+  onGoPricing,
 }) {
   const [activePlan, setActivePlan] = useState(
     () => localStorage.getItem("planora_plan") || "Free"
@@ -2470,6 +2481,7 @@ function Pricing({
         onGoFaq={onGoFaq}
         onGoAbout={onGoAbout}
         onStartSimulation={onStartSimulation}
+        onGoPricing={onGoPricing}
       />
 
       {toast && (
@@ -2584,6 +2596,12 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function goPricing() {
+    setPendingScrollTarget(null);
+    setPage("pricing");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   useEffect(() => {
     if (page !== "home" || !pendingScrollTarget) {
       return;
@@ -2666,6 +2684,7 @@ export default function App() {
         onGoFaq={() => goToSection("faq")}
         onGoAbout={() => goToSection("about")}
         onStartSimulation={startSimulation}
+        onGoPricing={goPricing}
       />
     );
   }
@@ -2748,6 +2767,7 @@ export default function App() {
       onGoFaq={() => goToSection("faq")}
       onGoAbout={() => goToSection("about")}
       onStartSimulation={startSimulation}
+      onGoPricing={goPricing}
     />
   );
 }
