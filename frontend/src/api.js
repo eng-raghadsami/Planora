@@ -1,4 +1,4 @@
-const API = "http://127.0.0.1:8000/api";
+const API = "https://planora-8.onrender.com/api";
 
 async function post(path, data) {
   const res = await fetch(`${API}${path}`, {
