@@ -10,6 +10,6 @@ WORKDIR /var/www
 
 COPY . .
 
-RUN composer install --no-interaction --prefer-dist
+RUN composer install --no-interaction --prefer-dist --no-dev -vvv
 
-CMD php artisan serve --host=0.0.0.0 --port=10000
+CMD php -S 0.0.0.0:10000 -t public
