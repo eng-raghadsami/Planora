@@ -135,7 +135,7 @@ Includes:
 ---
 
 ## 🎥 Demo Video
-> 🔗 https://planora-nuei9u6nc-eng-raghadsamis-projects.vercel.app/ 
+> 🔗 https://planora-cyan.vercel.app/
 
 ---
 
