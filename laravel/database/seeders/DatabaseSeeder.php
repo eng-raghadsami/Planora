@@ -22,7 +22,10 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        // Seed pricing plans
-        $this->call(PlansTableSeeder::class);
+        $this->call([
+            BusinessTypesTableSeeder::class,
+            LocationProfilesTableSeeder::class,
+            PlansTableSeeder::class,
+        ]);
     }
 }

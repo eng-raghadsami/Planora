@@ -7,6 +7,11 @@ use App\Http\Controllers\SimulationController;
 Route::post('/simulate', [SimulationController::class, 'simulate']);
 Route::post('/scenarios', [SimulationController::class, 'scenarios']);
 Route::post('/ai-analysis', [AIController::class, 'analyze']);
+Route::get('/simulation-options', [SimulationController::class, 'options']);
+Route::post('/simulation-input', [SimulationController::class, 'prepare']);
+Route::post('/location-comparison', [SimulationController::class, 'locationComparison']);
+Route::get('/home-content', [SimulationController::class, 'homeContent']);
+Route::get('/pricing-plans', [SimulationController::class, 'pricingPlans']);
 
 Route::get('/simulate', function () {
     return response()->json([

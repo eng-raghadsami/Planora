@@ -2,10 +2,89 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SimulationInputService;
+use App\Models\Plan;
 use Illuminate\Http\Request;
 
 class SimulationController extends Controller
 {
+    public function options(SimulationInputService $inputService)
+    {
+        return response()->json($inputService->options());
+    }
+
+    public function prepare(Request $request, SimulationInputService $inputService)
+    {
+        $prepared = $inputService->prepare($request->all());
+
+        if (! empty($prepared['errors'])) {
+            return response()->json($prepared, 422);
+        }
+
+        return response()->json($prepared);
+    }
+
+    public function locationComparison(Request $request, SimulationInputService $inputService)
+    {
+        return response()->json($inputService->locationComparison($request->all()));
+    }
+
+    public function homeContent()
+    {
+        return response()->json([
+            'planner_preview' => [
+                'base_balance' => 70000,
+                'base_burn' => 6200,
+                'minimum_burn' => 1400,
+                'modes' => [
+                    'save' => ['label' => 'Save', 'balance_factor' => 1.2, 'burn_factor' => 0.9, 'points' => '8,98 40,87 72,81 104,70 136,57 168,46'],
+                    'balance' => ['label' => 'Balance', 'balance_factor' => 1.0, 'burn_factor' => 1.0, 'points' => '8,96 40,85 72,84 104,72 136,66 168,58'],
+                    'adjust' => ['label' => 'Adjust', 'balance_factor' => 0.88, 'burn_factor' => 1.08, 'points' => '8,97 40,90 72,89 104,82 136,77 168,72'],
+                ],
+            ],
+            'features' => [
+                ['icon' => 'chart', 'title' => 'Cost Breakdown', 'text' => 'Understand and categorize expenses.'],
+                ['icon' => 'growth', 'title' => 'Profit Prediction', 'text' => 'Forecast revenues and profits.'],
+                ['icon' => 'cash', 'title' => 'Cash Flow Simulation', 'text' => 'Visualize your future cash flow.'],
+                ['icon' => 'cogs', 'title' => 'AI Insights', 'text' => 'Get actionable recommendations.'],
+            ],
+            'flow_steps' => [
+                ['id' => 1, 'title' => 'Input Essentials', 'text' => 'Add your investment, expected sales, and monthly costs in less than a minute.'],
+                ['id' => 2, 'title' => 'Stress-Test Scenarios', 'text' => 'Simulate seasonality, risk, and unexpected costs to avoid blind spots.'],
+                ['id' => 3, 'title' => 'Decide With Confidence', 'text' => 'Use AI-backed recommendations and monthly visibility before spending money.'],
+            ],
+            'faqs' => [
+                ['id' => 1, 'q' => 'Can I use Planora if I only have rough numbers?', 'a' => 'Yes. The simulation is designed for quick estimates first, then refinement as your numbers become clearer.'],
+                ['id' => 2, 'q' => 'Does Planora handle risky or seasonal businesses?', 'a' => 'Yes. You can model seasonality, volatility, marketing impact, and surprise costs to mimic real-world movement.'],
+                ['id' => 3, 'q' => 'What if my business type is not listed exactly?', 'a' => 'Choose the closest type. Planora still lets you customize all important assumptions and stress scenarios.'],
+            ],
+            'use_cases' => [
+                ['title' => 'New Cafe Launch', 'text' => 'Estimate break-even timing before signing a rental contract.'],
+                ['title' => 'Retail Expansion', 'text' => 'Compare best/worst case months before opening the second branch.'],
+                ['title' => 'Freelancer Studio', 'text' => 'Plan monthly runway and protect against unstable demand periods.'],
+            ],
+        ]);
+    }
+
+    public function pricingPlans()
+    {
+        $plans = Plan::query()
+            ->orderBy('price_cents')
+            ->get()
+            ->map(fn (Plan $plan) => [
+                'title' => $plan->name,
+                'price' => '$' . number_format($plan->price_cents / 100, $plan->price_cents > 0 ? 2 : 0),
+                'amount' => $plan->price_cents / 100,
+                'items' => $plan->features ?? [],
+                'button' => $plan->price_cents > 0
+                    ? ($plan->popular ? 'Start Pro Trial' : 'Go Premium')
+                    : 'Current Plan',
+                'popular' => $plan->popular,
+            ]);
+
+        return response()->json($plans);
+    }
+
     public function simulate(Request $request)
     {
         $validated = $request->validate([
