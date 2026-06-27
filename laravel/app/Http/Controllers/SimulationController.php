@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\SimulationInputService;
 use App\Models\Plan;
 use Illuminate\Http\Request;
+use Throwable;
 
 class SimulationController extends Controller
 {
@@ -68,21 +69,26 @@ class SimulationController extends Controller
 
     public function pricingPlans()
     {
-        $plans = Plan::query()
-            ->orderBy('price_cents')
-            ->get()
-            ->map(fn (Plan $plan) => [
-                'title' => $plan->name,
-                'price' => '$' . number_format($plan->price_cents / 100, $plan->price_cents > 0 ? 2 : 0),
-                'amount' => $plan->price_cents / 100,
-                'items' => $plan->features ?? [],
-                'button' => $plan->price_cents > 0
-                    ? ($plan->popular ? 'Start Pro Trial' : 'Go Premium')
-                    : 'Current Plan',
-                'popular' => $plan->popular,
-            ]);
+        try {
+            $plans = Plan::query()->orderBy('price_cents')->get();
 
-        return response()->json($plans);
+            if ($plans->isEmpty()) {
+                $plans = $this->fallbackPlans();
+            }
+        } catch (Throwable) {
+            $plans = $this->fallbackPlans();
+        }
+
+        return response()->json($plans->map(fn (Plan $plan) => [
+            'title' => $plan->name,
+            'price' => '$' . number_format($plan->price_cents / 100, $plan->price_cents > 0 ? 2 : 0),
+            'amount' => $plan->price_cents / 100,
+            'items' => $plan->features ?? [],
+            'button' => $plan->price_cents > 0
+                ? ($plan->popular ? 'Start Pro Trial' : 'Go Premium')
+                : 'Current Plan',
+            'popular' => $plan->popular,
+        ]));
     }
 
     public function simulate(Request $request)
@@ -363,5 +369,35 @@ class SimulationController extends Controller
         $index = ($month - 1) % count($pattern);
 
         return 1 + ($pattern[$index] * ($volatility / 0.10));
+    }
+
+    private function fallbackPlans()
+    {
+        return collect([
+            new Plan([
+                'name' => 'Free',
+                'slug' => 'free',
+                'price_cents' => 0,
+                'interval' => 'month',
+                'features' => ['Basic Simulations', 'Limited Reports', 'Email Support'],
+                'popular' => false,
+            ]),
+            new Plan([
+                'name' => 'Pro',
+                'slug' => 'pro',
+                'price_cents' => 999,
+                'interval' => 'month',
+                'features' => ['All Features', 'Advanced Reports', 'Scenario Comparisons', 'Priority Support'],
+                'popular' => true,
+            ]),
+            new Plan([
+                'name' => 'Premium',
+                'slug' => 'premium',
+                'price_cents' => 1999,
+                'interval' => 'month',
+                'features' => ['All Pro Features', 'Custom Analysis', 'Dedicated Consultant', 'VIP Support'],
+                'popular' => false,
+            ]),
+        ]);
     }
 }

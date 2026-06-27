@@ -24,6 +24,9 @@ export default function Simulation({
   onGoAbout,
   onStartSimulation,
   onGoPricing,
+  onGoAuth,
+  onLogout,
+  user,
 }) {
   const [submitted, setSubmitted] = useState(false);
   const hasValidationErrors = !hasRequiredFields(formData) || Object.keys(getValidationErrors(formData, true)).length > 0;
@@ -35,6 +38,11 @@ export default function Simulation({
   const cityOptions = Object.keys(locations[formData.country] ?? {});
   const defaults = simulationOptions?.business_defaults?.[formData.businessType] ?? {};
   const locationProfile = locations[formData.country]?.[formData.city] ?? {};
+  const marketContext = locationProfile.market_context ?? {};
+  const dataSources = simulationOptions?.data_sources ?? {};
+  const sourceNames = Array.isArray(dataSources.sources)
+    ? dataSources.sources.map((source) => source.name).join(" + ")
+    : "Local defaults";
   const suggestedCosts = Math.round(Number(defaults.monthly_costs ?? 0) * Number(locationProfile.cost_factor ?? 1));
   const basicComplete = !hasValidationErrors;
   const advancedComplete = formData.advancedMode
@@ -84,6 +92,9 @@ export default function Simulation({
         onGoAbout={onGoAbout}
         onStartSimulation={onStartSimulation}
         onGoPricing={onGoPricing}
+        onGoAuth={onGoAuth}
+        onLogout={onLogout}
+        user={user}
       />
 
       <section className="simulation-card">
@@ -168,6 +179,8 @@ export default function Simulation({
             <div className="smart-box">
               <p><b>Smart Suggestion:</b> For {formData.businessType} in {formData.city}, typical fixed costs start around {formatCurrency(suggestedCosts)} and average team size is {defaults.employees ?? "N/A"}.</p>
               <p><b>Local signal:</b> Typical rent range in {formData.city} is {formatCurrency(locationProfile.rent_range?.[0])} to {formatCurrency(locationProfile.rent_range?.[1])}, and average salary is around {formatCurrency(locationProfile.avg_salary)}.</p>
+              <p><b>Live data:</b> {sourceNames}. Inflation: {marketContext.inflation_percent ?? "N/A"}%, GDP growth: {marketContext.gdp_growth_percent ?? "N/A"}%, USD/{marketContext.currency ?? "local"}: {marketContext.usd_exchange_rate ?? "N/A"}.</p>
+              <p><b>Data status:</b> {marketContext.source_status === "live" ? "Live data loaded" : "Using fallback data"}{marketContext.fetched_at ? `, updated ${new Date(marketContext.fetched_at).toLocaleDateString()}` : ""}.</p>
               <button type="button" className="outline-btn" onClick={applySmartSuggestions}>
                 Use Suggested Costs
               </button>

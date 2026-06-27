@@ -29,6 +29,9 @@ export default function Dashboard({
   onGoAbout,
   onStartSimulation,
   onGoPricing,
+  onGoAuth,
+  onLogout,
+  user,
 }) {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState(null);
@@ -88,6 +91,9 @@ export default function Dashboard({
           onGoAbout={onGoAbout}
           onStartSimulation={onStartSimulation}
           onGoPricing={onGoPricing}
+          onGoAuth={onGoAuth}
+          onLogout={onLogout}
+          user={user}
         />
         <section className="dashboard-card">
           <h1>Results Dashboard</h1>
@@ -118,6 +124,9 @@ export default function Dashboard({
         onGoAbout={onGoAbout}
         onStartSimulation={onStartSimulation}
         onGoPricing={onGoPricing}
+        onGoAuth={onGoAuth}
+        onLogout={onLogout}
+        user={user}
       />
 
       <section className="dashboard-card" id="report-area">

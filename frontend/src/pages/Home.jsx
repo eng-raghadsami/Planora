@@ -22,6 +22,9 @@ export default function Home({
   onGoAbout,
   onStartSimulation,
   onGoPricing,
+  onGoAuth,
+  onLogout,
+  user,
 }) {
   const [plannerMode, setPlannerMode] = useState("balance");
   const [reservePercent, setReservePercent] = useState(36);
@@ -84,6 +87,9 @@ export default function Home({
         onGoAbout={onGoAbout}
         onStartSimulation={onStartSimulation}
         onGoPricing={onGoPricing}
+        onGoAuth={onGoAuth}
+        onLogout={onLogout}
+        user={user}
       />
 
       <section

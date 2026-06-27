@@ -236,6 +236,9 @@ export default function Pricing({
   onGoAbout,
   onStartSimulation,
   onGoPricing,
+  onGoAuth,
+  onLogout,
+  user,
 }) {
   const [activePlan, setActivePlan] = useState(
     () => localStorage.getItem("planora_plan") || "Free"
@@ -282,6 +285,9 @@ export default function Pricing({
         onGoAbout={onGoAbout}
         onStartSimulation={onStartSimulation}
         onGoPricing={onGoPricing}
+        onGoAuth={onGoAuth}
+        onLogout={onLogout}
+        user={user}
       />
 
       {toast && (

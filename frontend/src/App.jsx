@@ -1,16 +1,29 @@
 ﻿import { useEffect, useState } from "react";
 import "./App.css";
 
-import { simulate, getScenarios, getAI, getSimulationOptions, prepareSimulationInput } from "./api";
+import {
+  simulate,
+  getScenarios,
+  getAI,
+  getSimulationOptions,
+  prepareSimulationInput,
+  getAuthToken,
+  getCurrentUser,
+  logoutUser,
+} from "./api";
 import Home from "./pages/Home";
 import Simulation from "./pages/Simulation";
 import Dashboard from "./pages/Dashboard";
 import Insights from "./pages/Insights";
 import Pricing from "./pages/Pricing";
+import Auth from "./pages/Auth";
 import { emptyForm, getValidationErrors } from "./lib/planning";
 
 export default function App() {
   const [page, setPage] = useState("home");
+  const [authMode, setAuthMode] = useState("login");
+  const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(() => !getAuthToken());
   const [pendingScrollTarget, setPendingScrollTarget] = useState(null);
   const [formData, setFormData] = useState(emptyForm);
   const [simulationOptions, setSimulationOptions] = useState(null);
@@ -32,14 +45,48 @@ export default function App() {
   }
 
   function startSimulation() {
+    if (!user) {
+      setAuthMode("login");
+      setPage("auth");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     setPendingScrollTarget(null);
     setPage("simulation");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function goPricing() {
+    if (!user) {
+      setAuthMode("login");
+      setPage("auth");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     setPendingScrollTarget(null);
     setPage("pricing");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function goAuth(mode = "login") {
+    setAuthMode(mode);
+    setPendingScrollTarget(null);
+    setPage("auth");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function handleLogout() {
+    await logoutUser();
+    setUser(null);
+    setPage("home");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleAuthSuccess(nextUser) {
+    setUser(nextUser);
+    setPage("simulation");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -52,7 +99,40 @@ export default function App() {
     onGoAbout: () => goToSection("about"),
     onStartSimulation: startSimulation,
     onGoPricing: goPricing,
+    onGoAuth: goAuth,
+    onLogout: handleLogout,
+    user,
   };
+
+  useEffect(() => {
+    if (!getAuthToken()) {
+      return;
+    }
+
+    let active = true;
+
+    getCurrentUser()
+      .then((payload) => {
+        if (active) {
+          setUser(payload.user);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          logoutUser();
+          setUser(null);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setAuthReady(true);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -156,6 +236,21 @@ export default function App() {
   }
 
   if (page === "simulation") {
+    if (!authReady) {
+      return <main className="auth-page auth-loading">Loading account...</main>;
+    }
+
+    if (!user) {
+      return (
+        <Auth
+          mode="login"
+          onAuthSuccess={handleAuthSuccess}
+          onGoHome={goHome}
+          onSwitchMode={setAuthMode}
+        />
+      );
+    }
+
     return (
       <Simulation
         setPage={setPage}
@@ -198,6 +293,17 @@ export default function App() {
 
   if (page === "pricing") {
     return <Pricing setPage={setPage} {...navigationProps} />;
+  }
+
+  if (page === "auth") {
+    return (
+      <Auth
+        mode={authMode}
+        onAuthSuccess={handleAuthSuccess}
+        onGoHome={goHome}
+        onSwitchMode={setAuthMode}
+      />
+    );
   }
 
   return <Home setPage={setPage} {...navigationProps} />;

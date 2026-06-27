@@ -2,7 +2,17 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AIController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SimulationController;
+use App\Http\Middleware\ApiTokenAuth;
+
+Route::post('/auth/register', [AuthController::class, 'register']);
+Route::post('/auth/login', [AuthController::class, 'login']);
+
+Route::middleware(ApiTokenAuth::class)->group(function () {
+    Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+});
 
 Route::post('/simulate', [SimulationController::class, 'simulate']);
 Route::post('/scenarios', [SimulationController::class, 'scenarios']);

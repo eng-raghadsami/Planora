@@ -9,6 +9,9 @@ export default function Navbar({
   onGoAbout,
   onStartSimulation,
   onGoPricing,
+  onGoAuth,
+  onLogout,
+  user,
 }) {
   return (
     <header className="navbar">
@@ -23,9 +26,20 @@ export default function Navbar({
         <button onClick={onGoAbout}>About</button>
       </nav>
 
-      <button className="primary-btn" onClick={onGoPricing || onStartSimulation}>
-        View Pricing
-      </button>
+      <div className="nav-actions">
+        {user ? (
+          <>
+            <span className="nav-user">Hi, {user.name}</span>
+            <button className="outline-nav-btn" onClick={onLogout}>Logout</button>
+          </>
+        ) : (
+          <button className="outline-nav-btn" onClick={() => onGoAuth?.("login")}>Login</button>
+        )}
+
+        <button className="primary-btn" onClick={onGoPricing || onStartSimulation}>
+          View Pricing
+        </button>
+      </div>
     </header>
   );
 }

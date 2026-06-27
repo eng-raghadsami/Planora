@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'planora_data' => [
+        'live_enabled' => env('PLANORA_LIVE_DATA_ENABLED', true),
+    ],
+
 ];

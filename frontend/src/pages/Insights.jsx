@@ -128,6 +128,9 @@ export default function Insights({
   onGoAbout,
   onStartSimulation,
   onGoPricing,
+  onGoAuth,
+  onLogout,
+  user,
 }) {
   const [activeRec, setActiveRec]   = useState(null);
   const [activeTab, setActiveTab]   = useState("overview");
@@ -192,6 +195,9 @@ export default function Insights({
         onGoAbout={onGoAbout}
         onStartSimulation={onStartSimulation}
         onGoPricing={onGoPricing}
+        onGoAuth={onGoAuth}
+        onLogout={onLogout}
+        user={user}
       />
 
       <section className="ai-card" id="ai-report-area">
