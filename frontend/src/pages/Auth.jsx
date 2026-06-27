@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaArrowRight, FaLock, FaUserPlus } from "react-icons/fa";
+import { FaArrowRight, FaCheckCircle, FaLock, FaUserPlus } from "react-icons/fa";
 import Logo from "../components/Logo";
 import { loginUser, registerUser } from "../api";
 
@@ -61,9 +61,20 @@ export default function Auth({ mode = "login", onAuthSuccess, onGoHome, onSwitch
             <p>
               Sign in to keep your plans, scenarios, and pricing choices connected to your account.
             </p>
+
+            <div className="auth-benefits">
+              <span><FaCheckCircle /> Save every simulation</span>
+              <span><FaCheckCircle /> Reopen dashboards anytime</span>
+              <span><FaCheckCircle /> Keep AI insights connected</span>
+            </div>
           </div>
 
           <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="auth-form-heading">
+              <p>{isRegister ? "New account" : "Secure access"}</p>
+              <h2>{isRegister ? "Start planning with Planora" : "Login to continue"}</h2>
+            </div>
+
             <div className="auth-tabs" role="tablist" aria-label="Authentication mode">
               <button
                 type="button"
@@ -87,6 +98,7 @@ export default function Auth({ mode = "login", onAuthSuccess, onGoHome, onSwitch
                 <input
                   type="text"
                   autoComplete="name"
+                  placeholder="Raghad Sami"
                   value={form.name}
                   onChange={(event) => updateField("name", event.target.value)}
                   required
@@ -99,6 +111,7 @@ export default function Auth({ mode = "login", onAuthSuccess, onGoHome, onSwitch
               <input
                 type="email"
                 autoComplete="email"
+                placeholder="you@example.com"
                 value={form.email}
                 onChange={(event) => updateField("email", event.target.value)}
                 required
@@ -111,6 +124,7 @@ export default function Auth({ mode = "login", onAuthSuccess, onGoHome, onSwitch
                 type="password"
                 autoComplete={isRegister ? "new-password" : "current-password"}
                 minLength={8}
+                placeholder={isRegister ? "Create at least 8 characters" : "Enter your password"}
                 value={form.password}
                 onChange={(event) => updateField("password", event.target.value)}
                 required
@@ -124,6 +138,7 @@ export default function Auth({ mode = "login", onAuthSuccess, onGoHome, onSwitch
                   type="password"
                   autoComplete="new-password"
                   minLength={8}
+                  placeholder="Repeat your password"
                   value={form.password_confirmation}
                   onChange={(event) => updateField("password_confirmation", event.target.value)}
                   required
